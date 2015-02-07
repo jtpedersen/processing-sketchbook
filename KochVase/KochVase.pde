@@ -2,7 +2,7 @@ import processing.dxf.*;
 
 void setup() {
   size(800, 800, P3D);
-  createLevels(5);
+  createLevels(3);
 }
 boolean record;
 
@@ -11,6 +11,11 @@ void keyPressed() {
   // Use a key press so that it doesn't make a million files
   if (key == 'r') {
   	record = true;
+  } else if (key == 'o') {
+    OBJ obj = new OBJ();
+    for(KochLevel kl: levels)
+      obj.merge(kl.obj());
+    obj.save("hest.obj");
   }
 }
 
@@ -216,7 +221,32 @@ class KochLevel {
     V(below.get(0));
 
     endShape();
+  }
 
+  OBJ obj() {
+    OBJ obj = new OBJ();
+    if (below.isEmpty())
+      return obj;
+    
+    obj.vertices.addAll(pts);
+    obj.vertices.addAll(below);
+    
+    int cnt = pts.size();
+    if (cnt != below.size()) println("AAAAAAAArgh");
+
+    for(int i = 0; i < cnt; i++) {
+      if (i < cnt -1) {
+        // bottom
+        //    |\
+        //    |_\
+        obj.faces.add(new PVector(i, cnt + i + 1, cnt + i));
+        // top
+        //    \-|
+        //     \|
+        obj.faces.add(new PVector(i, i + 1, cnt + i + 1));
+      }
+    }
+    return obj;
   }
 
   void offset(float z, float belowZ) {
@@ -237,7 +267,35 @@ class KochLevel {
     }
 
   }
+}
 
+class OBJ {
+  ArrayList<PVector> vertices;
+  ArrayList<PVector> faces;
+  OBJ() {
+      vertices = new ArrayList<PVector>();
+      faces = new ArrayList<PVector>();
+  }
 
+  void merge(OBJ other) {
+    int cnt = vertices.size();
+    vertices.addAll(other.vertices);
+    for(PVector f : other.faces) {
+      f.x += cnt; f.y += cnt; f.z += cnt;
+    }
+    faces.addAll(other.faces);
+  }
+
+  void save(String filename) {
+    PrintWriter out = createWriter(filename);
+    for(PVector v: vertices) {
+      out.write("v " + v.x + " " + v.y + " " + v.z + "\n");
+    }
+    for(PVector f: faces) {
+      out.write("f " + (int)f.x + " " + (int)f.y + " " + (int)f.z + "\n");
+    }
+    out.flush();
+    out.close();
+  }
   
 }
