@@ -2,7 +2,7 @@ import processing.dxf.*;
 
 void setup() {
   size(800, 800, P3D);
-  createLevels(3);
+  createLevels(4);
 }
 boolean record;
 
@@ -239,11 +239,11 @@ class KochLevel {
         // bottom
         //    |\
         //    |_\
-        obj.faces.add(new PVector(i, cnt + i + 1, cnt + i));
+        obj.faces.add(new PVector(i, cnt + i, cnt + i + 1));
         // top
         //    \-|
         //     \|
-        obj.faces.add(new PVector(i, i + 1, cnt + i + 1));
+        obj.faces.add(new PVector(i, cnt + i + 1, i + 1));
       }
     }
     return obj;
@@ -292,7 +292,8 @@ class OBJ {
       out.write("v " + v.x + " " + v.y + " " + v.z + "\n");
     }
     for(PVector f: faces) {
-      out.write("f " + (int)f.x + " " + (int)f.y + " " + (int)f.z + "\n");
+      // offset by one
+      out.write("f " + (int)(1 + f.x) + " " + (int)(1 + f.y) + " " + (int)(1 + f.z) + "\n");
     }
     out.flush();
     out.close();
