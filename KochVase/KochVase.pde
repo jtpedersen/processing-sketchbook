@@ -1,25 +1,46 @@
+import processing.dxf.*;
+
 void setup() {
   size(800, 800, P3D);
-  createLevels(6);
+  createLevels(5);
+}
+boolean record;
+
+
+void keyPressed() {
+  // Use a key press so that it doesn't make a million files
+  if (key == 'r') {
+  	record = true;
+  }
 }
 
 void draw() {
   background(0);
- 
   lights();
 
-  translate(width / 2, 3 * height / 4);
-  rotateY(map(mouseX, 0, width, 0, PI));
-  rotateZ(map(mouseY, 0, height, 0, -PI));
-  rotateX(PI/2.0);
-  fill(#AAAAAA);
-  stroke(255,0,0);
-  strokeWeight(.3);
-  noStroke();
+  if (record) {
+    beginRaw(DXF, "output.dxf");
+  } else {
+    translate(width / 2, 3 * height / 4);
+    rotateY(map(mouseX, 0, width, 0, PI));
+    rotateZ(map(mouseY, 0, height, 0, -PI));
+    rotateX(PI/2.0);
+    fill(#AAAAAA);
+    stroke(255,0,0);
+    strokeWeight(.3);
+    noStroke();
+  }
+  
   drawBase();
   for (int i = 0; i < levels.size(); i++) {
     drawLevel(i);
   }
+  // Do all your drawing here
+  if (record) {
+    endRaw();
+    record = false;
+  }
+
 }
 
 ArrayList<KochLevel> levels = new ArrayList<KochLevel>();
@@ -41,13 +62,29 @@ void createLevels(int cnt) {
     kl.below.addAll(belowKoch(prev, first));
     levels.add(kl);
   }
+  offsetLayers();
+  scaleLayers();
+}
+
+void offsetLayers() {
   float last = 0;
-  for (int i = 1; i < cnt; i++) {
+  for (int i = 1; i < levels.size(); i++) {
     KochLevel kl = levels.get(i);
     float cur = 107 * pow(2.0 * i, .626);;
     kl.offset(cur, last);
     last = cur;
   }
+}
+
+void scaleLayers() {
+  float last = 1.0;
+  for (int i = 1; i < levels.size(); i++) {
+    KochLevel kl = levels.get(i);
+    float cur =  .025 * i * i + 1.0 + .2 * i;
+    kl.scaleXY(cur, last);
+    last = cur;
+  }
+
 }
 
 ArrayList<PVector> Kochify(PVector start, PVector end) {
@@ -189,16 +226,18 @@ class KochLevel {
       p.z = belowZ;
   }
 
+  void scaleXY(float s, float belowS) {
+    for (PVector p : pts) {
+      p.x *= s;
+      p.y *= s;
+    }
+    for (PVector p : below) {
+      p.x *= belowS;
+      p.y *= belowS;
+    }
+
+  }
+
+
+  
 }
-
-
-
-
-
-
-
-
-
-
-
-
