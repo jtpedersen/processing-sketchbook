@@ -7,43 +7,57 @@ void draw() {
   background(0);
  
   lights();
-  translate(width / 2, height / 2);
+
+  translate(width / 2, 3 * height / 4);
   rotateY(map(mouseX, 0, width, 0, PI));
   rotateZ(map(mouseY, 0, height, 0, -PI));
+  rotateX(PI/2.0);
   fill(#AAAAAA);
   stroke(255,0,0);
-  strokeWeight(3);
-  translate(0, -40, 0);
+  strokeWeight(.3);
+  noStroke();
   drawBase();
-  for (int i = 1; i < levels.size(); i++) {
+  for (int i = 0; i < levels.size(); i++) {
     drawLevel(i);
   }
 }
 
 ArrayList<KochLevel> levels = new ArrayList<KochLevel>();
 void createLevels(int cnt) {
-  ArrayList<PVector> corners = base(3, 100);
-  levels.add(new KochLevel(0, corners));
+  levels.add(new KochLevel(0));
+  levels.get(0).pts = base(3, 100);
   for (int j = 1; j < cnt; j++) {
-    ArrayList<PVector> pts = new ArrayList<PVector>();
+    KochLevel kl = new KochLevel(j);
     ArrayList<PVector> base = new ArrayList<PVector>(levels.get(j-1).pts);
     PVector first = base.get(0);
     PVector prev = first;
     for (int i = 1; i < base.size(); i++) {
       PVector cur = base.get(i);
-      pts.addAll(Kochify(prev, cur, 1));
+      kl.pts.addAll(Kochify(prev, cur));
+      kl.below.addAll(belowKoch(prev, cur));
       prev = cur;
     }
-    pts.addAll(Kochify(prev, first, 1));
-    levels.add(new KochLevel(j, pts));
+    kl.pts.addAll(Kochify(prev, first));
+    kl.below.addAll(belowKoch(prev, first));
+    levels.add(kl);
+  }
+  float last = 0;
+  for (int i = 1; i < cnt; i++) {
+    KochLevel kl = levels.get(i);
+    float cur = 107 * pow(2.0 * i, .626);;
+    kl.offset(cur, last);
+    last = cur;
   }
 }
 
+ArrayList<PVector> Kochify(PVector start, PVector end) {
+  return Kochify(start, end, 1);
+}
 ArrayList<PVector> Kochify(PVector start, PVector end, int level) {
   ArrayList<PVector> res = new ArrayList<PVector>();
   if (level == 0) {
-    res.add(start);
-    res.add(end);
+    res.add(start.get());
+    res.add(end.get());
     return res;
   }
   PVector dir = PVector.sub(end,start);
@@ -67,6 +81,43 @@ ArrayList<PVector> Kochify(PVector start, PVector end, int level) {
   return res;
 }
 
+ArrayList<PVector> belowKoch(PVector start, PVector end) {
+  //return a list of vertices with out pertubation on the middle point
+  PVector dir = PVector.sub(end,start);
+  float len = dir.mag();
+  dir.normalize();
+
+  PVector p1 = PVector.add(start, PVector.mult(dir, len / 3.0));
+  PVector p2 = PVector.add(start, PVector.mult(dir, len / 2.0));
+  PVector p3 = PVector.add(start, PVector.mult(dir, 2 * len / 3.0));
+
+  ArrayList<PVector> res = new ArrayList<PVector>();
+  res.addAll(Kochify(start, p1, 0));
+  res.addAll(Kochify(p1, p2,  0));
+  res.addAll(Kochify(p2, p3, 0));
+  res.addAll(Kochify(p3, end, 0));
+  
+  return res;
+}
+
+
+
+ArrayList<PVector> removeRepeated(ArrayList<PVector> in) {
+  ArrayList<PVector> out = new ArrayList<PVector>();
+  PVector first = in.get(0);
+  PVector prev = first;
+  for (int i = 1; i < in.size() - 1; i++) {
+    PVector cur = in.get(i);
+    if (cur != prev)
+      out.add(cur);
+    prev = cur;
+  }
+  prev = in.get(in.size()-1);
+  if (prev != first)
+    out.add(prev);
+  return out;
+}
+
 ArrayList<PVector> base(int cnt, float radius) {
   ArrayList<PVector> corners = new ArrayList<PVector>();
   for(int i = 0; i < cnt; i++) {
@@ -86,13 +137,9 @@ void drawBase() {
 }
 
 void drawLevel(int i) {
-  pushMatrix();
-  translate(0,0,i*50);
-  beginShape(LINES);
-  levels.get(i).dumpVerticies();
-  endShape();
-  popMatrix();
-
+  KochLevel kl = levels.get(i);
+  kl.lines();
+  kl.quadStrip();
 }
 
 void V(PVector v) {
@@ -101,17 +148,57 @@ void V(PVector v) {
 
 class KochLevel {
   ArrayList<PVector> pts;
+  ArrayList<PVector> below;
   int level;
-  KochLevel(int level, ArrayList<PVector> pts) {
+  KochLevel(int level) {
     this.level = level;
-    this.pts = pts;
+    this.pts = new ArrayList<PVector>();
+    this.below = new ArrayList<PVector>();
   }
 
   void dumpVerticies() {
     for(PVector p : pts) 
       V(p);
-    V(pts.get(0));
+    V(pts.get(0));              
   }
 
+  void lines() {
+    beginShape(LINES);
+    dumpVerticies();
+    endShape();
+  }
+  void quadStrip() {
+    if (below.isEmpty())
+      return;
+    beginShape(QUAD_STRIP);
+    for(int i = 0; i < below.size(); i++) {
+      V(pts.get(i));
+      V(below.get(i));
+    }
+    V(pts.get(0));
+    V(below.get(0));
+
+    endShape();
+
+  }
+
+  void offset(float z, float belowZ) {
+    for (PVector p : pts)
+      p.z = z;
+    for (PVector p : below)
+      p.z = belowZ;
+  }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
