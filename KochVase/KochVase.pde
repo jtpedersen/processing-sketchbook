@@ -2,7 +2,7 @@ import processing.dxf.*;
 
 void setup() {
   size(800, 800, P3D);
-  createLevels(4);
+  createLevels(5);
 }
 boolean record;
 
@@ -33,7 +33,7 @@ void draw() {
     fill(#AAAAAA);
     stroke(255,0,0);
     strokeWeight(.3);
-    noStroke();
+    // noStroke();
   }
   
   drawBase();
@@ -55,16 +55,13 @@ void createLevels(int cnt) {
   for (int j = 1; j < cnt; j++) {
     KochLevel kl = new KochLevel(j);
     ArrayList<PVector> base = new ArrayList<PVector>(levels.get(j-1).pts);
-    PVector first = base.get(0);
-    PVector prev = first;
     for (int i = 1; i < base.size(); i++) {
       PVector cur = base.get(i);
-      kl.pts.addAll(Kochify(prev, cur));
-      kl.below.addAll(belowKoch(prev, cur));
-      prev = cur;
+      kl.pts.addAll(Kochify(base.get(i-1), cur));
+      kl.below.addAll(belowKoch(base.get(i-1), cur));
     }
-    kl.pts.addAll(Kochify(prev, first));
-    kl.below.addAll(belowKoch(prev, first));
+    kl.pts.addAll(Kochify(base.get(base.size()-1), base.get(0)));
+    kl.below.addAll(belowKoch(base.get(base.size()-1), base.get(0)));
     levels.add(kl);
   }
   offsetLayers();
@@ -85,7 +82,7 @@ void scaleLayers() {
   float last = 1.0;
   for (int i = 1; i < levels.size(); i++) {
     KochLevel kl = levels.get(i);
-    float cur =  .025 * i * i + 1.0 + .2 * i;
+    float cur =  .0125 * i * i + 1.0 + .2 * i;
     kl.scaleXY(cur, last);
     last = cur;
   }
@@ -93,15 +90,7 @@ void scaleLayers() {
 }
 
 ArrayList<PVector> Kochify(PVector start, PVector end) {
-  return Kochify(start, end, 1);
-}
-ArrayList<PVector> Kochify(PVector start, PVector end, int level) {
   ArrayList<PVector> res = new ArrayList<PVector>();
-  if (level == 0) {
-    res.add(start.get());
-    res.add(end.get());
-    return res;
-  }
   PVector dir = PVector.sub(end,start);
   PVector up = new PVector(0,0,1);
   PVector right = dir.cross(up);
@@ -115,29 +104,26 @@ ArrayList<PVector> Kochify(PVector start, PVector end, int level) {
   float h = sqrt((len/3.0)*(len/3.0) - (len/6.0)*(len/6.0));
   p2.add(PVector.mult(right, h));
 
-  res.addAll(Kochify(start, p1, level-1));
-  res.addAll(Kochify(p1, p2, level-1));
-  res.addAll(Kochify(p2, p3, level-1));
-  res.addAll(Kochify(p3, end, level-1));
-  
+  res.add(start.get());
+  res.add(p1);
+  res.add(p2);
+  res.add(p3);
+  res.add(end.get());
+   
   return res;
 }
 
 ArrayList<PVector> belowKoch(PVector start, PVector end) {
   //return a list of vertices with out pertubation on the middle point
-  PVector dir = PVector.sub(end,start);
-  float len = dir.mag();
-  dir.normalize();
-
-  PVector p1 = PVector.add(start, PVector.mult(dir, len / 3.0));
-  PVector p2 = PVector.add(start, PVector.mult(dir, len / 2.0));
-  PVector p3 = PVector.add(start, PVector.mult(dir, 2 * len / 3.0));
+  PVector m = PVector.add(start, end);
+  m.mult(.5);
 
   ArrayList<PVector> res = new ArrayList<PVector>();
-  res.addAll(Kochify(start, p1, 0));
-  res.addAll(Kochify(p1, p2,  0));
-  res.addAll(Kochify(p2, p3, 0));
-  res.addAll(Kochify(p3, end, 0));
+  res.add(start.get());
+  res.add(m);
+  res.add(m.get());
+  res.add(m.get());
+  res.add(end.get());
   
   return res;
 }
@@ -289,7 +275,9 @@ class OBJ {
   void save(String filename) {
     PrintWriter out = createWriter(filename);
     for(PVector v: vertices) {
+      v.mult(1000.0);
       out.write("v " + v.x + " " + v.y + " " + v.z + "\n");
+      v.mult(1.0 / 1000.0);
     }
     for(PVector f: faces) {
       // offset by one
