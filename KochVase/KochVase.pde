@@ -17,10 +17,10 @@ void keyPressed() {
   // Use a key press so that it doesn't make a million files
 
   if (key == 'o') {
-    OBJ obj = new OBJ();
-    for(KochLevel kl: levels)
-      obj.merge(kl.obj());
-    obj.save("hest.obj");
+    // OBJ obj = new OBJ();
+    // for(KochLevel kl: levels)
+    //   obj.merge(kl.obj());
+    // obj.save("hest.obj");
   } else if ( key == 'l' ) {
     createLevels(--levelCnt);
   } else if (key == 'L') {
@@ -39,9 +39,10 @@ void draw() {
   strokeWeight(1.3);
   // noStroke();
   
-  for (int i = 0; i < levels.size(); i++) {
-    drawLevel(i);
-  }
+  // for (int i = 0; i < levels.size(); i++) {
+  //   drawLevel(i);
+  // }
+  renderMesh();
 
 }
 
@@ -65,24 +66,19 @@ void createLevels(int cnt) {
 }
 
 void offsetLayers() {
-  float last = 0;
   for (int i = 1; i < levels.size(); i++) {
     KochLevel kl = levels.get(i);
     float cur = 50 * pow(2.0 * i, .8626);;
-    kl.offset(cur, last);
-    last = cur;
+    kl.offset(cur);
   }
 }
 
 void scaleLayers() {
-  float last = 1.0;
   for (int i = 1; i < levels.size(); i++) {
     KochLevel kl = levels.get(i);
     float cur =  .0125 * i * i + 1.0 + .2 * i;
-    kl.scaleXY(cur, last);
-    last = cur;
+    kl.scaleXY(cur);
   }
-
 }
 
 ArrayList<P4> Kochify(P4 start, P4 end) {
@@ -128,7 +124,6 @@ ArrayList<P4> base(int cnt, float radius) {
 void drawLevel(int i) {
   KochLevel kl = levels.get(i);
   kl.lines();
-  kl.quadStrip();
 }
 
 void V(PVector v) {
@@ -142,6 +137,10 @@ class P4 extends PVector {
   P4(float x, float y, float z, float u) {
     super(x,y,z);
     this.u = u;
+  }
+  P4(float f) {
+    super(f,f,f);
+    this.u = f;
   }
   
   P4(PVector pv, float u) {
