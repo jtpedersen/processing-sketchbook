@@ -2,12 +2,15 @@ import peasy.*;
 
 PeasyCam cam;
 
+int levelCnt = 3;
+ArrayList<KochLevel> levels;
+
 void setup() {
   size(800, 800, P3D);
   cam = new PeasyCam(this, 800);
   cam.setMinimumDistance(500);
   cam.setMaximumDistance(1500);
-  createLevels(6);
+  createLevels(levelCnt);
 }
 
 void keyPressed() {
@@ -18,6 +21,10 @@ void keyPressed() {
     for(KochLevel kl: levels)
       obj.merge(kl.obj());
     obj.save("hest.obj");
+  } else if ( key == 'l' ) {
+    createLevels(--levelCnt);
+  } else if (key == 'L') {
+    createLevels(++levelCnt);
   }
 }
 
@@ -32,15 +39,15 @@ void draw() {
   strokeWeight(1.3);
   // noStroke();
   
-  drawBase();
   for (int i = 0; i < levels.size(); i++) {
     drawLevel(i);
   }
 
 }
 
-ArrayList<KochLevel> levels = new ArrayList<KochLevel>();
+
 void createLevels(int cnt) {
+  levels = new ArrayList<KochLevel>();
   levels.add(new KochLevel(0));
   levels.get(0).pts = base(3, 100);
   for (int j = 1; j < cnt; j++) {
@@ -105,23 +112,6 @@ ArrayList<P4> Kochify(P4 start, P4 end) {
   return res;
 }
 
-
-ArrayList<P4> removeRepeated(ArrayList<P4> in) {
-  ArrayList<P4> out = new ArrayList<P4>();
-  P4 first = in.get(0);
-  P4 prev = first;
-  for (int i = 1; i < in.size() - 1; i++) {
-    P4 cur = in.get(i);
-    if (cur != prev)
-      out.add(cur);
-    prev = cur;
-  }
-  prev = in.get(in.size()-1);
-  if (prev != first)
-    out.add(prev);
-  return out;
-}
-
 ArrayList<P4> base(int cnt, float radius) {
   ArrayList<P4> corners = new ArrayList<P4>();
   for(int i = 0; i < cnt; i++) {
@@ -134,12 +124,6 @@ ArrayList<P4> base(int cnt, float radius) {
   return corners;
 }
 
-void drawBase() {
-  beginShape(TRIANGLE_FAN);
-  V(new PVector(0,0,0));
-  levels.get(0).dumpVerticies();
-  endShape();
-}
 
 void drawLevel(int i) {
   KochLevel kl = levels.get(i);
@@ -150,11 +134,6 @@ void drawLevel(int i) {
 void V(PVector v) {
   vertex(v.x, v.y, v.z);
 }
-
-// void V(P4 v) {
-//   vertex(v.x, v.y, v.z, v.u);
-// }
-
 
 class P4 extends PVector {
   
