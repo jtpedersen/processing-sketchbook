@@ -23,6 +23,12 @@ class Mesh {
     vertex(v.x, v.y, v.z);
   }
 
+  int addVertex(PVector v) {
+    int ret = vertices.size();
+    vertices.add(v);
+    return ret;
+  }
+
 }
 
 
