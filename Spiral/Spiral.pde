@@ -50,7 +50,8 @@ void draw() {
   ArrayList<PVector> v = d1(w);
   ArrayList<PVector> u = cross(w,v);
   
-
+  float r = 1.0;
+  float dR = 1.02;
   for(int i = 0; i < u.size(); i++) {
     // the coordinate system
     PVector e1 = u.get(i);
@@ -58,7 +59,8 @@ void draw() {
     e1.normalize();
     e2.normalize();
     PVector origo = pts.get(i);
-    drawCircle(origo, e1, e2, 8.0);
+    drawCircle(origo, e1, e2, r);
+    r *= dR;
   }
   cam.beginHUD();
   noLights();
@@ -72,8 +74,8 @@ void draw() {
 
 ArrayList<PVector> createSpiral() {
   float theta = 0;
-  float r = 10;
-  float z = 10;
+  float r = 1;
+  float z = 1;
 
   ArrayList<PVector> res = new ArrayList<PVector>();
   for(int t = 0; t < 200; t++) {
