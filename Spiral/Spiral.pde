@@ -11,31 +11,32 @@ void setup() {
 
 float [] parms = { 1.01, 1.01, .1 };
 String[] names = { "lambdaR",  "lambdaZ",  "dTheta"};
-int manipulatedParaemeter = -1;
-
+int manipulatedParameter = 0;
+float smallChange = .001;
+float largeChange = .01;
 void keyPressed() {
   if ('q' == key)
     exit();
-  if ('a' == key)
-    manipulatedParaemeter = manipulatedParaemeter < 0 ? 0 : -1;
-}
 
-
-void mousePressed() {
-  if (manipulatedParaemeter < 0)
-    return;
-  manipulatedParaemeter++;
-  manipulatedParaemeter %= parms.length;
+  if (key == CODED) {
+    if (UP == keyCode)
+      parms[manipulatedParameter] += largeChange;
+    if (DOWN == keyCode)
+      parms[manipulatedParameter] -= largeChange;
+    if (RIGHT == keyCode)
+      parms[manipulatedParameter] += smallChange;
+    if (LEFT == keyCode)
+      parms[manipulatedParameter] -= smallChange;
+  }
+  if (' ' == key) {
+    manipulatedParameter++;
+    manipulatedParameter %= parms.length;
+  }
 }
 
 
 void draw() {
   background(0);
-  float fine = map(mouseX, 0.0, float(width), 0.0, 0.1);
-  float coarse = map(mouseY, 0.0, float(height), 0.0, 2.0);
-  if (manipulatedParaemeter >= 0) {
-    parms[manipulatedParaemeter] = fine + coarse;
-  }
 
   lights();
   fill(#AAAAAA);
@@ -63,7 +64,8 @@ void draw() {
   noLights();
   textSize(20);
   for (int i = 0; i < parms.length; i++) {
-    text(names[i] + ": " + parms[i], 10, 20 + 30 * i);
+    String prefix = (i == manipulatedParameter) ? "->" : "  ";
+    text(prefix + names[i] + ": " + parms[i], 10, 20 + 30 * i);
   }
   cam.endHUD();
 }
