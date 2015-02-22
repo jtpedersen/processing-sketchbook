@@ -9,8 +9,8 @@ void setup() {
   cam.setMaximumDistance(500);
 }
 
-float [] parms = { 1.01, 1.01, .1 };
-String[] names = { "lambdaR",  "lambdaZ",  "dTheta"};
+float [] parms = { 1.01, 1.01, .1 , 1.01};
+String[] names = { "lambdaR",  "lambdaZ",  "dTheta", "lamdaR_Generating"};
 int manipulatedParameter = 0;
 float smallChange = .001;
 float largeChange = .01;
@@ -51,7 +51,6 @@ void draw() {
   ArrayList<PVector> u = cross(w,v);
   
   float r = 1.0;
-  float dR = 1.02;
   for(int i = 0; i < u.size(); i++) {
     // the coordinate system
     PVector e1 = u.get(i);
@@ -60,7 +59,7 @@ void draw() {
     e2.normalize();
     PVector origo = pts.get(i);
     drawCircle(origo, e1, e2, r);
-    r *= dR;
+    r *= parms[3];
   }
   cam.beginHUD();
   noLights();
