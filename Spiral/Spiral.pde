@@ -10,6 +10,10 @@ void setup() {
   cam.setMinimumDistance(50);
   cam.setMaximumDistance(500);
   pparameters = new PParameter();
+  pparameters.addVariable("LambdaZ: controls z geometric progression [default:1.01] [step:0.1, 0.01] [range:0,2]");
+  pparameters.addVariable("LambdaR: controls radius geometric progression [default:1.01] [step:0.1, 0.01] [range:0,2]");
+
+  
   createMesh();
 }
 
