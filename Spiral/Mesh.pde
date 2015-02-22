@@ -35,13 +35,18 @@ class Mesh {
   void perturbSeam(float s) {
     for(int i : seam) {
       PVector p = PVector.random3D();
-      p.mult(offset * s);
+      p.mult(s);
       PVector ps = vertices.get(i);
       ps.add(p);
     }
   }
 
   void sew(ArrayList<Integer> newSeam) {
+    if (seam.size() == 0) {
+      seam = newSeam;
+      return;
+    }
+
     if (newSeam.size() != seam.size()) {
       print("AAARGH");
     }
@@ -51,6 +56,14 @@ class Mesh {
       mesh.faces.add(new PVector(newSeam.get(i-1), seam.get(i), newSeam.get(i)));
     }
     mesh.seam = newSeam;
+  }
+
+  void addCurve(ArrayList<PVector> newCurve) {
+    ArrayList<Integer> newSeam = new ArrayList<Integer>();
+    for(PVector p: newCurve) {
+      newSeam.add(addVertex(p));
+    }
+    sew(newSeam);
   }
 
 

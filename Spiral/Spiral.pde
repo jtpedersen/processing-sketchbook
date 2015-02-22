@@ -1,12 +1,15 @@
 import peasy.*;
 
 PeasyCam cam;
+Mesh mesh;
+
 
 void setup() {
   size(800, 800, P3D);
   cam = new PeasyCam(this, 300);
   cam.setMinimumDistance(50);
   cam.setMaximumDistance(500);
+  createMesh();
 }
 
 float [] parms = { 1.01, 1.01, .1 , 1.01};
@@ -27,6 +30,7 @@ void keyPressed() {
       parms[manipulatedParameter] += smallChange;
     if (LEFT == keyCode)
       parms[manipulatedParameter] -= smallChange;
+    createMesh();
   }
   if (' ' == key) {
     manipulatedParameter++;
@@ -41,9 +45,25 @@ void draw() {
   lights();
   fill(#AAAAAA);
   stroke(255,0,39);
-  strokeWeight(3);
+  strokeWeight(.3);
   // noStroke();
-  noFill();
+//  noFill();
+
+  mesh.render();
+
+  cam.beginHUD();
+  noLights();
+  textSize(20);
+  for (int i = 0; i < parms.length; i++) {
+    String prefix = (i == manipulatedParameter) ? "->" : "  ";
+    text(prefix + names[i] + ": " + parms[i], 10, 20 + 30 * i);
+  }
+  cam.endHUD();
+}
+
+
+void createMesh() {
+  mesh = new Mesh();
 
   ArrayList<PVector> pts = createSpiral();
   ArrayList<PVector> w = d1(pts);
@@ -58,17 +78,10 @@ void draw() {
     e1.normalize();
     e2.normalize();
     PVector origo = pts.get(i);
-    drawCircle(origo, e1, e2, r);
+    ArrayList<PVector> curve = generateCircle(origo, e1, e2, r);
+    mesh.addCurve(curve);
     r *= parms[3];
   }
-  cam.beginHUD();
-  noLights();
-  textSize(20);
-  for (int i = 0; i < parms.length; i++) {
-    String prefix = (i == manipulatedParameter) ? "->" : "  ";
-    text(prefix + names[i] + ": " + parms[i], 10, 20 + 30 * i);
-  }
-  cam.endHUD();
 }
 
 ArrayList<PVector> createSpiral() {
@@ -106,15 +119,15 @@ ArrayList<PVector> cross(ArrayList<PVector> pts1, ArrayList<PVector> pts2) {
 }
 
 
-void drawCircle(PVector origo, PVector e1, PVector e2, float r) {
-    beginShape();
-    int steps = 12;
-    float dTheta = TAU / float(steps-1);
-    for (int i = 0; i < steps; i++) {
-      float theta = i * dTheta;
-      PVector p = PVector.add(PVector.mult(e1, r * cos(theta)), PVector.mult(e2, r * sin(theta)));
-      p.add(origo);
-      vertex(p.x, p.y, p.z);
-    }
-    endShape();
+ArrayList<PVector> generateCircle(PVector origo, PVector e1, PVector e2, float r) {
+  ArrayList<PVector> pts = new ArrayList<PVector>();
+  int steps = 12;
+  float dTheta = TAU / float(steps-1);
+  for (int i = 0; i < steps; i++) {
+    float theta = i * dTheta;
+    PVector p = PVector.add(PVector.mult(e1, r * cos(theta)), PVector.mult(e2, r * sin(theta)));
+    p.add(origo);
+    pts.add(p);
+  }
+  return pts;
 }
