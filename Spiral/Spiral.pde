@@ -2,40 +2,21 @@ import peasy.*;
 
 PeasyCam cam;
 Mesh mesh;
-
+PParameter pparameters;
 
 void setup() {
   size(800, 800, P3D);
   cam = new PeasyCam(this, 300);
   cam.setMinimumDistance(50);
   cam.setMaximumDistance(500);
+  pparameters = new PParameter();
   createMesh();
 }
 
-float [] parms = { 1.01, 1.01, .1 , 1.01};
-String[] names = { "lambdaR",  "lambdaZ",  "dTheta", "lamdaR_Generating"};
-int manipulatedParameter = 0;
-float smallChange = .001;
-float largeChange = .01;
 void keyPressed() {
   if ('q' == key)
     exit();
-
-  if (key == CODED) {
-    if (UP == keyCode)
-      parms[manipulatedParameter] += largeChange;
-    if (DOWN == keyCode)
-      parms[manipulatedParameter] -= largeChange;
-    if (RIGHT == keyCode)
-      parms[manipulatedParameter] += smallChange;
-    if (LEFT == keyCode)
-      parms[manipulatedParameter] -= smallChange;
-    createMesh();
-  }
-  if (' ' == key) {
-    manipulatedParameter++;
-    manipulatedParameter %= parms.length;
-  }
+  pparameters.keyPressed();
 }
 
 
@@ -52,12 +33,7 @@ void draw() {
   mesh.render();
 
   cam.beginHUD();
-  noLights();
-  textSize(20);
-  for (int i = 0; i < parms.length; i++) {
-    String prefix = (i == manipulatedParameter) ? "->" : "  ";
-    text(prefix + names[i] + ": " + parms[i], 10, 20 + 30 * i);
-  }
+  pparameters.renderHUD();
   cam.endHUD();
 }
 
@@ -80,7 +56,7 @@ void createMesh() {
     PVector origo = pts.get(i);
     ArrayList<PVector> curve = generateCircle(origo, e1, e2, r);
     mesh.addCurve(curve);
-    r *= parms[3];
+    r *= pparameters.parms[3];
   }
 }
 
@@ -92,9 +68,9 @@ ArrayList<PVector> createSpiral() {
   ArrayList<PVector> res = new ArrayList<PVector>();
   for(int t = 0; t < 200; t++) {
     res.add(new PVector(r * cos(theta), r*sin(theta), z));
-    r *= parms[0];
-    z *= parms[1];
-    theta += parms[2];
+    r *= pparameters.parms[0];
+    z *= pparameters.parms[1];
+    theta += pparameters.parms[2];
   }
   return res;
 }
