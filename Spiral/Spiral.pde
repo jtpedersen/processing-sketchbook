@@ -10,10 +10,10 @@ void setup() {
   cam.setMinimumDistance(50);
   cam.setMaximumDistance(500);
   pparameters = new PParameter();
-  pparameters.addVariable("lZ: z geometric progression [default:1.01] [step:0.1, 0.01] [range:0,2]");
-  pparameters.addVariable("lR: radius geometric progression [default:1.01] [step:0.1, 0.01] [range:0,2]");
-  pparameters.addVariable("lRc: generating curve radius geometric progression [default:1.01] [step:0.1, 0.01] [range:0,2]");
-  pparameters.addVariable("dTheta: theta step [default:.1]");
+  pparameters.addVariable("lZ: z geometric progression [default:1.01] [step:0.01, 0.001] [range:0,2]");
+  pparameters.addVariable("lR: radius geometric progression [default:1.01] [step:0.01, 0.001] [range:0,2]");
+  pparameters.addVariable("lRc: generating curve radius geometric progression [default:1.01] [step:0.01, 0.001] [range:0,2]");
+  pparameters.addVariable("dTheta: theta step [default:.1] [step:.01,0.001]");
   createMesh();
 }
 
@@ -21,6 +21,11 @@ void keyPressed() {
   if ('q' == key)
     exit();
   pparameters.keyPressed();
+  createMesh();
+}
+
+void keyReleased() {
+  pparameters.keyReleased();
 }
 
 

@@ -3,11 +3,12 @@
 class PParameter {
 
   int manipulatedParameter = 0;
-
-  HashMap<String, PVariable> vars;
+  ArrayList<PVariable> vars;
+  boolean shiftPressed;
+  boolean hide;
   
   PParameter() {
-    vars = new HashMap<String, PVariable>();
+    vars = new ArrayList<PVariable>();
   }
 
   void addVariable(String cnf) {
@@ -20,9 +21,9 @@ class PParameter {
     String description = cnf.substring(name_sep + 1, cnf_sep).trim();
     String config = cnf.substring(cnf_sep).trim();
 
-    println("name: " + name);
-    println("description: " + description);
-    println("config: " + config);
+    // println("name: " + name);
+    // println("description: " + description);
+    // println("config: " + config);
 
     FloatVariable pv = null;    // XX todo nice generic PVariable
 
@@ -50,40 +51,82 @@ class PParameter {
         pv.maxVal = Float.parseFloat(vs[1]);
       }
     }
-    vars.put(name, pv);
+    vars.add(pv);
   }
 
   float readFloat(String name) {
-    return ((FloatVariable)vars.get(name)).v;
+    for (PVariable pv : vars) {
+      if (pv.name.equals(name))
+        return ((FloatVariable)pv).v;
+    }
+    return 0.0;
   }
+
+  void keyPressed() {
+    if (key == CODED) {
+      if (hide) return;         // do not manipulate what you can not see
+      if (SHIFT == keyCode) {
+        shiftPressed = true;
+      } else if (UP == keyCode) {
+        manipulatedParameter--;
+        if (manipulatedParameter < 0)
+          manipulatedParameter = vars.size() -1;
+      } else if (DOWN == keyCode) {
+        manipulatedParameter++;
+        manipulatedParameter %= vars.size();
+      } else if (RIGHT == keyCode) {
+        addPressed();
+      } else if (LEFT == keyCode) {
+        subPressed();
+      }
+    }
+    if ('h' == key ) {
+      hide = !hide;
+    }
+  }
+
+  void keyReleased() {
+    if (key == CODED) {
+      if (SHIFT == keyCode) {
+        shiftPressed = false;
+      }
+    }
+  }
+
+  void addPressed() {
+    if (shiftPressed)
+      vars.get(manipulatedParameter).addSmallStep();
+    else
+      vars.get(manipulatedParameter).addStep();
+  }
+
+  void subPressed() {
+    if (shiftPressed)
+      vars.get(manipulatedParameter).subSmallStep();
+    else
+      vars.get(manipulatedParameter).subStep();
+  }
+
 
   
-  void keyPressed() {
-    // if (key == CODED) {
-    //   if (UP == keyCode)
-    //     parms[manipulatedParameter] += largeChange;
-    //   if (DOWN == keyCode)
-    //     parms[manipulatedParameter] -= largeChange;
-    //   if (RIGHT == keyCode)
-    //     parms[manipulatedParameter] += smallChange;
-    //   if (LEFT == keyCode)
-    //     parms[manipulatedParameter] -= smallChange;
-    //   createMesh();
-    // }
-    // if (' ' == key) {
-    //   manipulatedParameter++;
-    //   manipulatedParameter %= parms.length;
-    // }
-
-  }
-
   void renderHUD() {
+    if (hide) return;
     noLights();
     textSize(20);
-    // for (int i = 0; i < parms.length; i++) {
-    //   String prefix = (i == manipulatedParameter) ? "->" : "  ";
-    //   text(prefix + names[i] + ": " + parms[i], 10, 20 + 30 * i);
-    // }
+    int start = manipulatedParameter-2;
+    if (start < 0) start += vars.size();
+    for (int i = 0; i < 5; i++) {
+      int idx = (start + i ) % vars.size();
+      int xoffset = 40 - 10 * abs(i-2);
+      PVariable pv = vars.get(idx);
+      if (idx == manipulatedParameter) {
+        fill(#FF0000);
+        text(pv.toString() + " - " + pv.description, xoffset , 20 + 30 * i);
+      } else {
+        fill(#AAAAAA);
+        text(pv.toString(), xoffset , 20 + 30 * i);
+      }
+    }
   }
 }
 
@@ -99,6 +142,10 @@ abstract class PVariable implements Adjustable {
   PVariable(String name, String description) {
     this.name = name;
     this.description = description;
+  }
+
+  String toString() {
+    return "name: " + description;
   }
 }
 
@@ -117,9 +164,8 @@ class FloatVariable extends PVariable {
     v = defaultValue;
   }
 
-  void add(float v) {
-    v += step;
-    v = constrain(v, minVal, maxVal);
+  void add(float inc) {
+    v = constrain(v + inc, minVal, maxVal);
   }
   
   void addStep() {
@@ -134,4 +180,15 @@ class FloatVariable extends PVariable {
   void subSmallStep() {
     add(-smallStep);
   }
+
+  String toString() {
+    return nf(v, 3,3) + ": " +name;
+  }
+  
+  String full() {
+    return  "v: " + v + ", defaultValue: " + defaultValue + ", step: " + step +  ", smallStep: " + smallStep +  ". minVal: " + minVal + ", maxVal: " + maxVal;
+
+  }
+
+  
 }
