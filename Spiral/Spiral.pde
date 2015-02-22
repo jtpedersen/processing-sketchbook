@@ -10,10 +10,10 @@ void setup() {
   cam.setMinimumDistance(50);
   cam.setMaximumDistance(500);
   pparameters = new PParameter();
-  pparameters.addVariable("LambdaZ: controls z geometric progression [default:1.01] [step:0.1, 0.01] [range:0,2]");
-  pparameters.addVariable("LambdaR: controls radius geometric progression [default:1.01] [step:0.1, 0.01] [range:0,2]");
-
-  
+  pparameters.addVariable("lZ: z geometric progression [default:1.01] [step:0.1, 0.01] [range:0,2]");
+  pparameters.addVariable("lR: radius geometric progression [default:1.01] [step:0.1, 0.01] [range:0,2]");
+  pparameters.addVariable("lRc: generating curve radius geometric progression [default:1.01] [step:0.1, 0.01] [range:0,2]");
+  pparameters.addVariable("dTheta: theta step [default:.1]");
   createMesh();
 }
 
@@ -51,6 +51,7 @@ void createMesh() {
   ArrayList<PVector> u = cross(w,v);
   
   float r = 1.0;
+  float lRc = pparameters.readFloat("lRc");
   for(int i = 0; i < u.size(); i++) {
     // the coordinate system
     PVector e1 = u.get(i);
@@ -60,7 +61,7 @@ void createMesh() {
     PVector origo = pts.get(i);
     ArrayList<PVector> curve = generateCircle(origo, e1, e2, r);
     mesh.addCurve(curve);
-    r *= pparameters.parms[3];
+    r *= lRc;
   }
 }
 
@@ -68,13 +69,16 @@ ArrayList<PVector> createSpiral() {
   float theta = 0;
   float r = 1;
   float z = 1;
+  float lR = pparameters.readFloat("lR");
+  float lZ = pparameters.readFloat("lZ");
+  float dTheta = pparameters.readFloat("dTheta");
 
   ArrayList<PVector> res = new ArrayList<PVector>();
   for(int t = 0; t < 200; t++) {
     res.add(new PVector(r * cos(theta), r*sin(theta), z));
-    r *= pparameters.parms[0];
-    z *= pparameters.parms[1];
-    theta += pparameters.parms[2];
+    r *= lR;
+    z *= lZ;
+    theta += dTheta;
   }
   return res;
 }

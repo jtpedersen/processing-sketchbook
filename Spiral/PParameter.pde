@@ -2,11 +2,7 @@
 
 class PParameter {
 
-  float [] parms = { 1.01, 1.01, .1 , 1.01};
-  String[] names = { "lambdaR",  "lambdaZ",  "dTheta", "lamdaR_Generating"};
   int manipulatedParameter = 0;
-  float smallChange = .001;
-  float largeChange = .01;
 
   HashMap<String, PVariable> vars;
   
@@ -15,7 +11,7 @@ class PParameter {
   }
 
   void addVariable(String cnf) {
-//    "LambdaZ: controls z geometric progression [default:1.01] [step:0.1, 0.01] [range:0,2]"
+//    "LambdaZ: z geometric progression [default:1.01] [step:0.1, 0.01] [range:0,2]"
     // why does java regexps taunt me?
     
     int name_sep = cnf.indexOf(':');
@@ -33,11 +29,9 @@ class PParameter {
     for(String s : config.split("\\[")) {
 
       int sep = s.indexOf(":");
-      println(s + ",   " + sep);
       if (sep < 0) continue;
       String cmd = s.substring(0, sep);
       String arg = s.substring(sep +1, s.indexOf("]"));
-
 
       if (cmd.equalsIgnoreCase("default")) {
         float v = Float.parseFloat(arg);
@@ -56,37 +50,40 @@ class PParameter {
         pv.maxVal = Float.parseFloat(vs[1]);
       }
     }
-    
+    vars.put(name, pv);
   }
 
+  float readFloat(String name) {
+    return ((FloatVariable)vars.get(name)).v;
+  }
 
   
   void keyPressed() {
-    if (key == CODED) {
-      if (UP == keyCode)
-        parms[manipulatedParameter] += largeChange;
-      if (DOWN == keyCode)
-        parms[manipulatedParameter] -= largeChange;
-      if (RIGHT == keyCode)
-        parms[manipulatedParameter] += smallChange;
-      if (LEFT == keyCode)
-        parms[manipulatedParameter] -= smallChange;
-      createMesh();
-    }
-    if (' ' == key) {
-      manipulatedParameter++;
-      manipulatedParameter %= parms.length;
-    }
+    // if (key == CODED) {
+    //   if (UP == keyCode)
+    //     parms[manipulatedParameter] += largeChange;
+    //   if (DOWN == keyCode)
+    //     parms[manipulatedParameter] -= largeChange;
+    //   if (RIGHT == keyCode)
+    //     parms[manipulatedParameter] += smallChange;
+    //   if (LEFT == keyCode)
+    //     parms[manipulatedParameter] -= smallChange;
+    //   createMesh();
+    // }
+    // if (' ' == key) {
+    //   manipulatedParameter++;
+    //   manipulatedParameter %= parms.length;
+    // }
 
   }
 
   void renderHUD() {
     noLights();
     textSize(20);
-    for (int i = 0; i < parms.length; i++) {
-      String prefix = (i == manipulatedParameter) ? "->" : "  ";
-      text(prefix + names[i] + ": " + parms[i], 10, 20 + 30 * i);
-    }
+    // for (int i = 0; i < parms.length; i++) {
+    //   String prefix = (i == manipulatedParameter) ? "->" : "  ";
+    //   text(prefix + names[i] + ": " + parms[i], 10, 20 + 30 * i);
+    // }
   }
 }
 
@@ -106,13 +103,18 @@ abstract class PVariable implements Adjustable {
 }
 
 class FloatVariable extends PVariable {
-  float v;
-  float smallStep, step;
-  float minVal, maxVal;
+  float v = 0.5, defaultValue = .5;
+  float step = 0.1, smallStep = .01;
+  float minVal = 0, maxVal = 1.0;
 
   FloatVariable(float defaultValue, String name, String description) {
     super(name, description);
-    this.v = defaultValue;
+    this.defaultValue = defaultValue;
+    reset();
+  }
+
+  void reset() {
+    v = defaultValue;
   }
 
   void add(float v) {
