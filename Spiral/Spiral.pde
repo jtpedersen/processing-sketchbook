@@ -2,30 +2,30 @@ import peasy.*;
 
 PeasyCam cam;
 Mesh mesh;
-PParameter pparameters;
+PParameter pp;
 
 void setup() {
   size(800, 800, P3D);
   cam = new PeasyCam(this, 300);
   cam.setMinimumDistance(50);
   cam.setMaximumDistance(500);
-  pparameters = new PParameter();
-  pparameters.addVariable("lZ: z geometric progression [default:1.01] [step:0.01, 0.001] [range:0,2]");
-  pparameters.addVariable("lR: radius geometric progression [default:1.01] [step:0.01, 0.001] [range:0,2]");
-  pparameters.addVariable("lRc: generating curve radius geometric progression [default:1.01] [step:0.01, 0.001] [range:0,2]");
-  pparameters.addVariable("dTheta: theta step [default:.1] [step:.01,0.001]");
+  pp = new PParameter();
+
+  pp.var("lR: radius geometric progression [default:1.01] [step:0.01, 0.001] [range:0,2]");
+  pp.var("lRc: generating curve radius geometric progression [default:1.01] [step:0.01, 0.001] [range:0,2]");
+  pp.var("dTheta: theta step [default:.1] [step:.01,0.001]");
   createMesh();
 }
 
 void keyPressed() {
   if ('q' == key)
     exit();
-  pparameters.keyPressed();
+  pp.keyPressed();
   createMesh();
 }
 
 void keyReleased() {
-  pparameters.keyReleased();
+  pp.keyReleased();
 }
 
 
@@ -36,13 +36,13 @@ void draw() {
   fill(#AAAAAA);
   stroke(255,0,39);
   strokeWeight(.3);
-  // noStroke();
+  noStroke();
 //  noFill();
 
   mesh.render();
 
   cam.beginHUD();
-  pparameters.renderHUD();
+  pp.renderHUD();
   cam.endHUD();
 }
 
@@ -56,7 +56,7 @@ void createMesh() {
   ArrayList<PVector> u = cross(w,v);
   
   float r = 1.0;
-  float lRc = pparameters.readFloat("lRc");
+  float lRc = pp.readFloat("lRc");
   for(int i = 0; i < u.size(); i++) {
     // the coordinate system
     PVector e1 = u.get(i);
@@ -74,12 +74,13 @@ ArrayList<PVector> createSpiral() {
   float theta = 0;
   float r = 1;
   float z = 1;
-  float lR = pparameters.readFloat("lR");
-  float lZ = pparameters.readFloat("lZ");
-  float dTheta = pparameters.readFloat("dTheta");
+  float lR = pp.readFloat("lR");
+  float lZ = pp.var("lZ: z geometric progression [default:1.01] [step:0.001, 0.0001] [range:0,2]").asFloat();
+  float dTheta = pp.readFloat("dTheta");
 
   ArrayList<PVector> res = new ArrayList<PVector>();
-  for(int t = 0; t < 200; t++) {
+  float tSteps = pp.var("tSteps: number of iterations [default:200.0] [step:10, 1]").asFloat(); //todo use asInt or better yet those newfangled generics
+  for(int t = 0; t < tSteps; t++) {
     res.add(new PVector(r * cos(theta), r*sin(theta), z));
     r *= lR;
     z *= lZ;
@@ -107,12 +108,11 @@ ArrayList<PVector> cross(ArrayList<PVector> pts1, ArrayList<PVector> pts2) {
   return res;
 }
 
-
 ArrayList<PVector> generateCircle(PVector origo, PVector e1, PVector e2, float r) {
   ArrayList<PVector> pts = new ArrayList<PVector>();
-  int steps = 12;
-  float dTheta = TAU / float(steps-1);
-  for (int i = 0; i < steps; i++) {
+  float steps = pp.var("circleSteps: granularity of generating circle [default:12.0] [range:3, 1000000] [step:1.0, 10]]").asFloat();
+  float dTheta = TAU / (steps);
+  for (int i = 0; i <= steps; i++) {
     float theta = i * dTheta;
     PVector p = PVector.add(PVector.mult(e1, r * cos(theta)), PVector.mult(e2, r * sin(theta)));
     p.add(origo);

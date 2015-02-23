@@ -11,7 +11,7 @@ class PParameter {
     vars = new ArrayList<PVariable>();
   }
 
-  void addVariable(String cnf) {
+  PVariable var(String cnf) {
 //    "LambdaZ: z geometric progression [default:1.01] [step:0.1, 0.01] [range:0,2]"
     // why does java regexps taunt me?
     
@@ -19,8 +19,9 @@ class PParameter {
     int cnf_sep = cnf.indexOf('[');
     String name = cnf.substring(0, name_sep);
 
-    if (isDefined(name))
-      return;                   // this is already parsed, or a duplicate made by mistake
+    PVariable pv = lookUp(name);
+    if (pv != null)
+      return pv;             // this is already parsed, or a duplicate made by mistake
     
     String description = cnf.substring(name_sep + 1, cnf_sep).trim();
     String config = cnf.substring(cnf_sep).trim();
@@ -30,18 +31,19 @@ class PParameter {
     // println("config: " + config);
 
     HashMap<String, String> options = splitConfig(config);
-    PVariable pv = getVariableFromConfig(options);
+    pv = getVariableFromConfig(options);
     pv.name = name;
     pv.description = description;
     vars.add(pv);
+    return pv;
   }
 
-  boolean isDefined(String name) {
+  PVariable lookUp(String name) {
     for (PVariable pv : vars) {
       if (pv.name.equals(name))
-        return true;
+        return pv;
     }
-    return false;
+    return null;
   }
 
   HashMap<String, String> splitConfig(String config) {
@@ -74,11 +76,7 @@ class PParameter {
   }
   
   float readFloat(String name) {
-    for (PVariable pv : vars) {
-      if (pv.name.equals(name))
-        return ((FloatVariable)pv).v;
-    }
-    return 0.0;
+    return ((FloatVariable)lookUp(name)).v;
   }
 
   void keyPressed() {
@@ -101,6 +99,8 @@ class PParameter {
     }
     if ('h' == key ) {
       hide = !hide;
+    } else if ('r' == key) {
+      reset();
     }
   }
 
@@ -112,6 +112,11 @@ class PParameter {
     }
   }
 
+  void reset() {
+    for(PVariable pv : vars)
+      pv.reset();
+  }
+  
   void addPressed() {
     if (shiftPressed)
       vars.get(manipulatedParameter).addSmallStep();
@@ -152,6 +157,7 @@ interface Adjustable {
   void subStep();
   void addSmallStep();
   void subSmallStep();
+  void reset();
 }
 
 abstract class PVariable implements Adjustable {
@@ -166,6 +172,10 @@ abstract class PVariable implements Adjustable {
 
   String toString() {
     return "name: " + description;
+  }
+
+  float asFloat() {
+    return 0.0;
   }
 }
 
@@ -198,6 +208,10 @@ class FloatVariable extends PVariable {
     reset();
   }
 
+  float asFloat() {
+    return v;
+  }
+  
   void reset() {
     v = defaultValue;
   }
@@ -227,6 +241,6 @@ class FloatVariable extends PVariable {
     return  "v: " + v + ", defaultValue: " + defaultValue + ", step: " + step +  ", smallStep: " + smallStep +  ". minVal: " + minVal + ", maxVal: " + maxVal;
 
   }
-
-  
 }
+
+
