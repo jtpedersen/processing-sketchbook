@@ -18,6 +18,10 @@ class PParameter {
     int name_sep = cnf.indexOf(':');
     int cnf_sep = cnf.indexOf('[');
     String name = cnf.substring(0, name_sep);
+
+    if (isDefined(name))
+      return;                   // this is already parsed, or a duplicate made by mistake
+    
     String description = cnf.substring(name_sep + 1, cnf_sep).trim();
     String config = cnf.substring(cnf_sep).trim();
 
@@ -25,35 +29,50 @@ class PParameter {
     // println("description: " + description);
     // println("config: " + config);
 
-    FloatVariable pv = null;    // XX todo nice generic PVariable
+    HashMap<String, String> options = splitConfig(config);
+    PVariable pv = getVariableFromConfig(options);
+    pv.name = name;
+    pv.description = description;
+    vars.add(pv);
+  }
 
+  boolean isDefined(String name) {
+    for (PVariable pv : vars) {
+      if (pv.name.equals(name))
+        return true;
+    }
+    return false;
+  }
+
+  HashMap<String, String> splitConfig(String config) {
+    HashMap<String, String> res = new HashMap<String, String>();
     for(String s : config.split("\\[")) {
-
       int sep = s.indexOf(":");
       if (sep < 0) continue;
       String cmd = s.substring(0, sep);
       String arg = s.substring(sep +1, s.indexOf("]"));
-
-      if (cmd.equalsIgnoreCase("default")) {
-        float v = Float.parseFloat(arg);
-        pv = new FloatVariable(v, name, description);
-      }
-
-      if (cmd.equalsIgnoreCase("step")) {
-        String[] vs = arg.split(",");
-        pv.step = Float.parseFloat(vs[0]);
-        pv.smallStep = Float.parseFloat(vs[1]);
-      }
-      
-      if (cmd.equalsIgnoreCase("range")) {
-        String[] vs = arg.split(",");
-        pv.minVal = Float.parseFloat(vs[0]);
-        pv.maxVal = Float.parseFloat(vs[1]);
-      }
-    }
-    vars.add(pv);
+      res.put(cmd.toLowerCase(), arg);
+    }    
+    return res;
   }
 
+  PVariable getVariableFromConfig(HashMap<String, String> config) {
+    // use defalt to deduce type
+    String val = config.get("default");
+    if (isFloatDefaultValue(val))
+      return new FloatVariable(config);
+    
+    return null;
+  }
+
+  boolean isFloatDefaultValue(String val) {
+    if (null == val) {
+      return true;
+    }
+    return match(val, "\\d*\\.?\\d*") != null;
+
+  }
+  
   float readFloat(String name) {
     for (PVariable pv : vars) {
       if (pv.name.equals(name))
@@ -107,8 +126,6 @@ class PParameter {
       vars.get(manipulatedParameter).subStep();
   }
 
-
-  
   void renderHUD() {
     if (hide) return;
     noLights();
@@ -139,6 +156,9 @@ interface Adjustable {
 
 abstract class PVariable implements Adjustable {
   String name, description;
+
+  PVariable() {}
+  
   PVariable(String name, String description) {
     this.name = name;
     this.description = description;
@@ -152,8 +172,26 @@ abstract class PVariable implements Adjustable {
 class FloatVariable extends PVariable {
   float v = 0.5, defaultValue = .5;
   float step = 0.1, smallStep = .01;
-  float minVal = 0, maxVal = 1.0;
+  float minVal = -4242.0, maxVal = 4242.0; // large arbitrary numbers
 
+  FloatVariable(HashMap<String, String> cnf) {
+    if (cnf.containsKey("default")) {
+      defaultValue = v = Float.parseFloat(cnf.get("default"));
+    }
+
+    if (cnf.containsKey("step")) {
+      String[] vs = cnf.get("step").split(",");
+      step = Float.parseFloat(vs[0]);
+      smallStep = Float.parseFloat(vs[1]);
+    }
+      
+    if (cnf.containsKey("range")) {
+      String[] vs = cnf.get("range").split(",");
+      minVal = Float.parseFloat(vs[0]);
+      maxVal = Float.parseFloat(vs[1]);
+    }
+  }
+  
   FloatVariable(float defaultValue, String name, String description) {
     super(name, description);
     this.defaultValue = defaultValue;
