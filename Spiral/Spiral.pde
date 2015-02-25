@@ -6,8 +6,8 @@ PParameter pp;
 
 void setup() {
   size(800, 800, P3D);
-  cam = new PeasyCam(this, 300);
-  cam.setMinimumDistance(50);
+  cam = new PeasyCam(this, 100);
+  cam.setMinimumDistance(10);
   cam.setMaximumDistance(500);
   pp = new PParameter();
 
@@ -56,17 +56,23 @@ void createMesh() {
   ArrayList<PVector> u = cross(w,v);
   
   float r = 1.0;
+  float phase = 0;
   float lRc = pp.readFloat("lRc");
+  float dPhi = pp.var("dPhi: rotation of coordinate frame [default:0.0] ").asFloat();
+  
   for(int i = 0; i < u.size(); i++) {
     // the coordinate system
     PVector e1 = u.get(i);
     PVector e2 = v.get(i);
     e1.normalize();
     e2.normalize();
+    
     PVector origo = pts.get(i);
-    ArrayList<PVector> curve = generateCircle(origo, e1, e2, r);
+    ArrayList<PVector> curve = generateCircle(origo, e1, e2, r, phase);
+
     mesh.addCurve(curve);
     r *= lRc;
+    phase += dPhi;
   }
 }
 
@@ -108,13 +114,17 @@ ArrayList<PVector> cross(ArrayList<PVector> pts1, ArrayList<PVector> pts2) {
   return res;
 }
 
-ArrayList<PVector> generateCircle(PVector origo, PVector e1, PVector e2, float r) {
+ArrayList<PVector> generateCircle(PVector origo, PVector e1, PVector e2, float r, float phase) {
   ArrayList<PVector> pts = new ArrayList<PVector>();
   float steps = pp.var("circleSteps: granularity of generating circle [default:12.0] [range:3, 1000000] [step:1.0, 10]]").asFloat();
+  float amplitude = pp.var("amplitude: cosine defomation of circle [default:1.0] ").asFloat();
+  float freq = pp.var("frequency: cosine defomation of circle [default:1.0] ").asFloat();
+
   float dTheta = TAU / (steps);
   for (int i = 0; i <= steps; i++) {
     float theta = i * dTheta;
-    PVector p = PVector.add(PVector.mult(e1, r * cos(theta)), PVector.mult(e2, r * sin(theta)));
+    float dr = r + amplitude * cos(i * freq);
+    PVector p = PVector.add(PVector.mult(e1, dr * cos(phase + theta)), PVector.mult(e2, dr * sin(phase + theta)));
     p.add(origo);
     pts.add(p);
   }
