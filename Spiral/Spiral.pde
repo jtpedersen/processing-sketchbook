@@ -33,6 +33,8 @@ void draw() {
   background(0);
 
   lights();
+  directionalLight(0, 255, 0, 0, -1, 0);
+  directionalLight(255, 255, 0, 1, -1, 0);
   fill(#AAAAAA);
   stroke(255,0,39);
   strokeWeight(.3);
@@ -57,7 +59,7 @@ void createMesh() {
   
   float r = 1.0;
   float phase = 0;
-  float lRc = pp.readFloat("lRc");
+  float lRc = pp.var("lRc").asFloat();
   float dPhi = pp.var("dPhi: rotation of coordinate frame [default:0.0] ").asFloat();
   
   for(int i = 0; i < u.size(); i++) {
@@ -80,9 +82,9 @@ ArrayList<PVector> createSpiral() {
   float theta = 0;
   float r = 1;
   float z = 1;
-  float lR = pp.readFloat("lR");
+  float lR = pp.var("lR").asFloat();
   float lZ = pp.var("lZ: z geometric progression [default:1.01] [step:0.001, 0.0001] [range:0,2]").asFloat();
-  float dTheta = pp.readFloat("dTheta");
+  float dTheta = pp.var("dTheta").asFloat();
 
   ArrayList<PVector> res = new ArrayList<PVector>();
   float tSteps = pp.var("tSteps: number of iterations [default:200.0] [step:10, 1]").asFloat(); //todo use asInt or better yet those newfangled generics
@@ -116,14 +118,13 @@ ArrayList<PVector> cross(ArrayList<PVector> pts1, ArrayList<PVector> pts2) {
 
 ArrayList<PVector> generateCircle(PVector origo, PVector e1, PVector e2, float r, float phase) {
   ArrayList<PVector> pts = new ArrayList<PVector>();
-  float steps = pp.var("circleSteps: granularity of generating circle [default:12.0] [range:3, 1000000] [step:1.0, 10]]").asFloat();
-  float amplitude = pp.var("amplitude: cosine defomation of circle [default:1.0] ").asFloat();
-  float freq = pp.var("frequency: cosine defomation of circle [default:1.0] ").asFloat();
-
+  int steps = pp.var("circleSteps: granularity of generating circle [default:12.0] [range:3, 1000000] [step:1.0, 10]]").asInt();
+  float amplitude = pp.var("amplitude: cosine defomation of circle [default:0.1] ").asFloat();
+  int freq = pp.var("frequency: cosine defomation of circle [default:1.0] [step:1,10]").asInt();
   float dTheta = TAU / (steps);
   for (int i = 0; i <= steps; i++) {
     float theta = i * dTheta;
-    float dr = r + amplitude * cos(i * freq);
+    float dr = r + r * amplitude * cos(theta * freq);
     PVector p = PVector.add(PVector.mult(e1, dr * cos(phase + theta)), PVector.mult(e2, dr * sin(phase + theta)));
     p.add(origo);
     pts.add(p);

@@ -66,6 +66,19 @@ class Mesh {
     sew(newSeam);
   }
 
+    void save(String filename) {
+    PrintWriter out = createWriter(filename);
+    for(PVector v: vertices) {
+      v.mult(1000.0);
+      out.write("v " + v.x + " " + v.y + " " + v.z + "\n");
+      v.mult(1.0 / 1000.0);
+    }
+    for(PVector f: faces) {
+      // offset by one
+      out.write("f " + (int)(1 + f.x) + " " + (int)(1 + f.y) + " " + (int)(1 + f.z) + "\n");
+    }
+    out.close();
+  }
 
 }
 

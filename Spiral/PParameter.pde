@@ -16,24 +16,24 @@ class PParameter {
     // why does java regexps taunt me?
     
     int name_sep = cnf.indexOf(':');
-    int cnf_sep = cnf.indexOf('[');
-    String name = cnf.substring(0, name_sep);
+    String name = cnf;
+    if (name_sep > 0) {
+      name = cnf.substring(0, name_sep);
+    } 
 
     PVariable pv = lookUp(name);
     if (pv != null)
       return pv;             // this is already parsed, or a duplicate made by mistake
-    
+
+    int cnf_sep = cnf.indexOf('[');
     String description = cnf.substring(name_sep + 1, cnf_sep).trim();
     String config = cnf.substring(cnf_sep).trim();
-
-    // println("name: " + name);
-    // println("description: " + description);
-    // println("config: " + config);
 
     HashMap<String, String> options = splitConfig(config);
     pv = getVariableFromConfig(options);
     pv.name = name;
     pv.description = description;
+    pv.cnf = cnf;
     vars.add(pv);
     return pv;
   }
@@ -75,10 +75,6 @@ class PParameter {
 
   }
   
-  float readFloat(String name) {
-    return ((FloatVariable)lookUp(name)).v;
-  }
-
   void keyPressed() {
     if (key == CODED) {
       if (hide) return;         // do not manipulate what you can not see
@@ -101,6 +97,8 @@ class PParameter {
       hide = !hide;
     } else if ('r' == key) {
       reset();
+    } else if ('s' == key) {
+      selectOutput("Where do you want to store the file?", "saveFile");
     }
   }
 
@@ -131,6 +129,15 @@ class PParameter {
       vars.get(manipulatedParameter).subStep();
   }
 
+  void saveFile(File file) {
+    if (null == file) return;
+    PrintWriter pw = createWriter(file.getAbsolutePath());
+    for(PVariable pv : vars) {
+      pw.write(pv.cnf + "\n");
+    }
+    pw.close();
+  }
+
   void renderHUD() {
     if (hide) return;
     noLights();
@@ -152,95 +159,5 @@ class PParameter {
   }
 }
 
-interface Adjustable {
-  void addStep();
-  void subStep();
-  void addSmallStep();
-  void subSmallStep();
-  void reset();
-}
-
-abstract class PVariable implements Adjustable {
-  String name, description;
-
-  PVariable() {}
-  
-  PVariable(String name, String description) {
-    this.name = name;
-    this.description = description;
-  }
-
-  String toString() {
-    return "name: " + description;
-  }
-
-  float asFloat() {
-    return 0.0;
-  }
-}
-
-class FloatVariable extends PVariable {
-  float v = 0.5, defaultValue = .5;
-  float step = 0.1, smallStep = .01;
-  float minVal = -4242.0, maxVal = 4242.0; // large arbitrary numbers
-
-  FloatVariable(HashMap<String, String> cnf) {
-    if (cnf.containsKey("default")) {
-      defaultValue = v = Float.parseFloat(cnf.get("default"));
-    }
-
-    if (cnf.containsKey("step")) {
-      String[] vs = cnf.get("step").split(",");
-      step = Float.parseFloat(vs[0]);
-      smallStep = Float.parseFloat(vs[1]);
-    }
-      
-    if (cnf.containsKey("range")) {
-      String[] vs = cnf.get("range").split(",");
-      minVal = Float.parseFloat(vs[0]);
-      maxVal = Float.parseFloat(vs[1]);
-    }
-  }
-  
-  FloatVariable(float defaultValue, String name, String description) {
-    super(name, description);
-    this.defaultValue = defaultValue;
-    reset();
-  }
-
-  float asFloat() {
-    return v;
-  }
-  
-  void reset() {
-    v = defaultValue;
-  }
-
-  void add(float inc) {
-    v = constrain(v + inc, minVal, maxVal);
-  }
-  
-  void addStep() {
-    add(step);
-  }
-  void subStep() {
-    add(-step);
-  }
-  void addSmallStep() {
-    add(smallStep);
-  }
-  void subSmallStep() {
-    add(-smallStep);
-  }
-
-  String toString() {
-    return nf(v, 3,3) + ": " +name;
-  }
-  
-  String full() {
-    return  "v: " + v + ", defaultValue: " + defaultValue + ", step: " + step +  ", smallStep: " + smallStep +  ". minVal: " + minVal + ", maxVal: " + maxVal;
-
-  }
-}
 
 
