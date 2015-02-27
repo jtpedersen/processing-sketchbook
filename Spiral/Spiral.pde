@@ -61,6 +61,8 @@ void createMesh() {
   float phase = 0;
   float lRc = pp.var("lRc").asFloat();
   float dPhi = pp.var("dPhi: rotation of coordinate frame [default:0.0] ").asFloat();
+  float tRFreg = pp.var("tRfreq: frequency of radius defomation along time axis [default:10]").asFloat();
+  float tAmplitude = pp.var("tAmplitude: amplitude of time based radius deformaion [default: .1]").asFloat();
   
   for(int i = 0; i < u.size(); i++) {
     // the coordinate system
@@ -68,9 +70,9 @@ void createMesh() {
     PVector e2 = v.get(i);
     e1.normalize();
     e2.normalize();
-    
+    float modifiedR = r  + r * tAmplitude * cos(tRFreg * i);
     PVector origo = pts.get(i);
-    ArrayList<PVector> curve = generateCircle(origo, e1, e2, r, phase);
+    ArrayList<PVector> curve = generateCircle(origo, e1, e2, modifiedR, phase);
 
     mesh.addCurve(curve);
     r *= lRc;
