@@ -31,10 +31,9 @@ class PPloader {
       }
       return false;
     }
-
     int idx = key - 'a';
-    println("Got key: " +  key  + " and idx " + idx);
-    if (idx > 0 && idx < saves.size())
+    // println("Got key: " +  key  + " and idx " + idx);
+    if (idx >= 0 && idx < saves.size())
       loadFile(saves.get(idx));
     
     return true;
@@ -42,7 +41,10 @@ class PPloader {
 
   void loadFile(String filename) {
     println("loading: " + filename);
-
+    pp.vars.clear();
+    for(String cnf: loadStrings("./saves/" + filename)) {
+      pp.var(cnf);
+    }
     mode = IDLE;
   }
 
