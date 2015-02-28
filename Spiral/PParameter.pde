@@ -6,9 +6,11 @@ class PParameter {
   ArrayList<PVariable> vars;
   boolean shiftPressed;
   boolean hide;
+  PPsaver ppsaver;
   
   PParameter() {
     vars = new ArrayList<PVariable>();
+    ppsaver = new PPsaver(this);
   }
 
   PVariable var(String cnf) {
@@ -76,6 +78,10 @@ class PParameter {
   }
   
   void keyPressed() {
+    if (ppsaver.mode != ppsaver.IDLE) {
+      ppsaver.keyPressed();
+      return;
+    }
     if (key == CODED) {
       if (hide) return;         // do not manipulate what you can not see
       if (SHIFT == keyCode) {
@@ -98,7 +104,7 @@ class PParameter {
     } else if ('r' == key) {
       reset();
     } else if ('s' == key) {
-      selectOutput("Where do you want to store the file?", "saveFile");
+      ppsaver.init();
     }
   }
 
@@ -127,15 +133,6 @@ class PParameter {
       vars.get(manipulatedParameter).subSmallStep();
     else
       vars.get(manipulatedParameter).subStep();
-  }
-
-  void saveFile(File file) {
-    if (null == file) return;
-    PrintWriter pw = createWriter(file.getAbsolutePath());
-    for(PVariable pv : vars) {
-      pw.write(pv.cnf + "\n");
-    }
-    pw.close();
   }
 
   void renderHUD() {

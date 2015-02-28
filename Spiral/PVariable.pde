@@ -16,6 +16,10 @@ abstract class PVariable implements Adjustable {
     this.description = description;
   }
 
+  String saveString() {
+    return cnf;
+  }
+
   String toString() {
     return "name: " + description;
   }
@@ -58,6 +62,13 @@ class FloatVariable extends PVariable {
     reset();
   }
 
+  String saveString() {
+    return name + ": " + description + "[default:" + v + "]" 
+      + "[step:" + step + ", " + smallStep + "]" 
+      + "[range:" + minVal + "," + maxVal + "]";
+  }
+
+  
   float asFloat() {
     return v;
   }
@@ -93,6 +104,5 @@ class FloatVariable extends PVariable {
   
   String full() {
     return  "v: " + v + ", defaultValue: " + defaultValue + ", step: " + step +  ", smallStep: " + smallStep +  ". minVal: " + minVal + ", maxVal: " + maxVal;
-
   }
 }
