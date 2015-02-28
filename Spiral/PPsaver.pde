@@ -25,7 +25,7 @@ class PPsaver {
   void keyPressed() {
     if (IDLE == mode) return;
 
-    if ('\b'== key){
+    if ('\b'== key) {
         filename = filename.substring(0, max(filename.length()-1, 0));
     } else if ('\n' == key) {
       saveFile();
@@ -43,5 +43,15 @@ class PPsaver {
     }
     pw.close();
     mode = IDLE;
+  }
+
+  void render() {
+    if (IDLE == mode) return;
+    textSize(20);
+    fill(#AAAAAA);
+    rect(20, 200, 300, 150);
+    fill(#C0FFEE);
+    text("Save file to path:", 60, 250);
+    text("./saves/" + filename + ".sav", 60, 300);
   }
 }

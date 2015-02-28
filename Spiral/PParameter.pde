@@ -153,6 +153,7 @@ class PParameter {
         text(pv.toString(), xoffset , 20 + 30 * i);
       }
     }
+    ppsaver.render();
   }
 }
 
