@@ -22,8 +22,17 @@ class PPsaver {
     filename = "";
   }
 
-  void keyPressed() {
-    if (IDLE == mode) return;
+  boolean handleKey() {
+    if (IDLE == mode) {
+      if ('s' == key)  {
+        init();
+        return true;
+      }
+
+      return false;
+    }
+
+
 
     if ('\b'== key) {
         filename = filename.substring(0, max(filename.length()-1, 0));
@@ -32,6 +41,7 @@ class PPsaver {
     } else {
       filename += key;
     }
+    return true;
  }
 
   void saveFile() {
@@ -54,4 +64,5 @@ class PPsaver {
     text("Save file to path:", 60, 250);
     text("./saves/" + filename + ".sav", 60, 300);
   }
+
 }

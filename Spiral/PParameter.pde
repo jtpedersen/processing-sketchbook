@@ -7,10 +7,12 @@ class PParameter {
   boolean shiftPressed;
   boolean hide;
   PPsaver ppsaver;
+  PPloader pploader;
   
   PParameter() {
     vars = new ArrayList<PVariable>();
     ppsaver = new PPsaver(this);
+    pploader = new PPloader(this);
   }
 
   PVariable var(String cnf) {
@@ -78,10 +80,9 @@ class PParameter {
   }
   
   void keyPressed() {
-    if (ppsaver.mode != ppsaver.IDLE) {
-      ppsaver.keyPressed();
-      return;
-    }
+    if (ppsaver.handleKey()) return;
+    if (pploader.handleKey()) return;
+
     if (key == CODED) {
       if (hide) return;         // do not manipulate what you can not see
       if (SHIFT == keyCode) {
@@ -103,8 +104,6 @@ class PParameter {
       hide = !hide;
     } else if ('r' == key) {
       reset();
-    } else if ('s' == key) {
-      ppsaver.init();
     }
   }
 
@@ -154,6 +153,7 @@ class PParameter {
       }
     }
     ppsaver.render();
+    pploader.render();
   }
 }
 
