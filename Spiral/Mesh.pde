@@ -52,10 +52,10 @@ class Mesh {
     }
 
     for(int i = 1; i < seam.size(); i++) {
-      mesh.faces.add(new PVector(seam.get(i-1), seam.get(i), newSeam.get(i-1)));
-      mesh.faces.add(new PVector(newSeam.get(i-1), seam.get(i), newSeam.get(i)));
+      faces.add(new PVector(seam.get(i-1), seam.get(i), newSeam.get(i-1)));
+      faces.add(new PVector(newSeam.get(i-1), seam.get(i), newSeam.get(i)));
     }
-    mesh.seam = newSeam;
+    seam = newSeam;
   }
 
   void addCurve(ArrayList<PVector> newCurve) {
