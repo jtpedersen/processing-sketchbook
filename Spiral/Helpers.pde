@@ -19,6 +19,20 @@ void drawVector(ArrayList<PVector> pts, ArrayList<PVector> vs) {
   endShape();
 }
 
+void drawCircle(PVector O,PVector e1, PVector e2, float r) {
+  int cs = 5; //pp.var("cs: steps in circle [default:10] [step:10, 1] [range:3,10000]").asInt();
+  float dTheta = TAU / (cs);
+  beginShape();
+  for (int i = 0; i <= cs; i++) {
+    float theta = i * dTheta;
+    PVector u = PVector.mult(e1, r * cos(theta));
+    PVector v = PVector.mult(e2, r * sin(theta));
+    PVector p = PVector.add(u,v);
+    vertex(O.x + p.x, O.y + p.y, O.z + p.z);
+  }
+  endShape();
+}
+
 ArrayList<PVector> d1(ArrayList<PVector> pts) {
   ArrayList<PVector> res = new ArrayList<PVector>();
   for(int i = 0; i < pts.size()-1; i++) {
