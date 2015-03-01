@@ -137,13 +137,13 @@ class PParameter {
   void renderHUD() {
     if (hide) return;
     cam.beginHUD();
-
-
     noLights();
     textSize(20);
     int start = manipulatedParameter-2;
     if (start < 0) start += vars.size();
+
     for (int i = 0; i < min(5, vars.size()); i++) {
+
       int idx = (start + i ) % vars.size();
       int xoffset = 40 - 10 * abs(i-2);
       PVariable pv = vars.get(idx);

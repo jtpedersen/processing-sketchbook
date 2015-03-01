@@ -1,4 +1,23 @@
+void drawList(ArrayList<PVector> pts) {
+  beginShape();
+  for(PVector p : pts)
+    vertex(p.x, p.y, p.z);
+  endShape();
+}
 
+void drawVector(ArrayList<PVector> pts, ArrayList<PVector> vs) {
+  beginShape(LINES);
+  stroke(#C0FFEE);
+  for (int i = 0; i< vs.size(); i+=5){
+    PVector p = pts.get(i);
+    PVector v = vs.get(i);
+//    v.normalize();
+    v.mult(5.0);
+    vertex(p.x, p.y, p.z);
+    vertex(p.x + v.x, p.y + v.y, p.z + v.z);
+  }
+  endShape();
+}
 
 ArrayList<PVector> d1(ArrayList<PVector> pts) {
   ArrayList<PVector> res = new ArrayList<PVector>();
