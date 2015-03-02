@@ -75,8 +75,8 @@ void setTheScene() {
   fill(#AAAAAA);
   stroke(255,0,39);
   strokeWeight(3.3);
-//  noStroke();
-  noFill();
+  noStroke();
+//  noFill();
 
 }
 

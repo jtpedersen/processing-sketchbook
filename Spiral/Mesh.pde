@@ -52,8 +52,8 @@ class Mesh {
     }
 
     for(int i = 1; i < seam.size(); i++) {
-      faces.add(new PVector(seam.get(i-1), seam.get(i), newSeam.get(i-1)));
-      faces.add(new PVector(newSeam.get(i-1), seam.get(i), newSeam.get(i)));
+      faces.add(new PVector(seam.get(i-1),  newSeam.get(i-1), seam.get(i)));
+      faces.add(new PVector(newSeam.get(i-1), newSeam.get(i), seam.get(i)));
     }
     seam = newSeam;
   }
