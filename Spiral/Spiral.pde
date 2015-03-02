@@ -11,35 +11,37 @@ void setup() {
   cam.setMinimumDistance(10);
   cam.setMaximumDistance(500);
   pp = new PParameter();
-  //sm = new SnailMesh();
+  sm = new SnailMesh();
 }
 
 void draw() {
-  setTheScene(); // sm.render();
-
-  ArrayList<PVector> pts = createSpiral();
-  ArrayList<PVector> tangents = d1(pts);
-  ArrayList<PVector> rights = d1(tangents);
-  ArrayList<PVector> ups = cross(rights, tangents);
+  setTheScene(); //
   
-  // drawList(pts);
-  // drawVector(pts, tangents);
-  // drawVector(pts, rights);
-  // drawVector(pts, ups);
-  float cr = 1.0;
-  float cTheta = 0;
+  sm.render();
 
-  float lcr = pp.var("lcr: circle progression [default:1.01] [step:.1,.01]").asFloat();
+  // ArrayList<PVector> pts = createSpiral();
+  // ArrayList<PVector> tangents = d1(pts);
+  // ArrayList<PVector> rights = d1(tangents);
+  // ArrayList<PVector> ups = cross(rights, tangents);
+  
+  // // drawList(pts);
+  // // drawVector(pts, tangents);
+  // // drawVector(pts, rights);
+  // // drawVector(pts, ups);
+  // float cr = 1.0;
+  // float cTheta = 0;
 
-  for (int i = 0; i<ups.size(); i++){
-    PVector p = pts.get(i);
-    PVector up = ups.get(i);
-    PVector right = rights.get(i);
-    up.normalize();
-    right.normalize();
-    drawCircle(p, up, right, cr);
-    cr *= lcr;
-  }
+  // float lcr = pp.var("lcr: circle progression [default:1.01] [step:.1,.01]").asFloat();
+
+  // for (int i = 0; i<ups.size(); i++){
+  //   PVector p = pts.get(i);
+  //   PVector up = ups.get(i);
+  //   PVector right = rights.get(i);
+  //   up.normalize();
+  //   right.normalize();
+  //   drawCircle(p, up, right, cr);
+  //   cr *= lcr;
+  // }
 
 
   
@@ -81,8 +83,12 @@ void setTheScene() {
 void keyPressed() {
   if ('q' == key)
     exit();
-  pp.keyPressed();
-//  sm.createMesh();
+  if (pp.keyPressed())
+    return;
+  if ('o' == key)
+    sm.mesh.save("spiral.obj");
+  else 
+    sm.createMesh();
 }
 
 void keyReleased() {

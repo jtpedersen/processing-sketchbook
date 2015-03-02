@@ -79,12 +79,12 @@ class PParameter {
 
   }
   
-  void keyPressed() {
-    if (ppsaver.handleKey()) return;
-    if (pploader.handleKey()) return;
+  boolean keyPressed() {
+    if (ppsaver.handleKey()) return true;
+    if (pploader.handleKey()) return true;
 
     if (key == CODED) {
-      if (hide) return;         // do not manipulate what you can not see
+      if (hide) return false;         // do not manipulate what you can not see
       if (SHIFT == keyCode) {
         shiftPressed = true;
       } else if (UP == keyCode) {
@@ -98,13 +98,18 @@ class PParameter {
         addPressed();
       } else if (LEFT == keyCode) {
         subPressed();
-      }
+      } else {
+        return false;
+      } 
     }
     if ('h' == key ) {
       hide = !hide;
     } else if ('r' == key) {
       reset();
+    } else {
+      return false;
     }
+    return true;
   }
 
   void keyReleased() {
