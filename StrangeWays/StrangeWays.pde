@@ -1,5 +1,4 @@
 import peasy.*;
-
 PeasyCam cam;
 
 void setup() {
@@ -13,7 +12,7 @@ void setup() {
 void draw() {
   setTheScene();
 
-  beginShape();
+  beginShape(POINTS);
   for(int i = 0; i < 10000; i++) {
     vertex(100.0 * pos.x, 100.0 * pos.y, 100.0 * pos.z);
     // print(pos);
@@ -28,20 +27,15 @@ float[] y_coeffs = new float[10];
 float[] z_coeffs = new float[10];
 
 void strange_init() {
-  
   boolean gotOne = false;
   while (!gotOne) {
     restart();
     warmup(1000);
     determine_bb();
-    if (hasNAN(pos)) {
-      println("w00000000000000t");
-    }
-
     float vol = volume();
     float md = maxDim();
     println("Candidate volume: " + vol + " with a maxdDim of " + md);
-    if (vol > 10.0 || vol < 1.0) {
+    if (vol > 10.0 || vol < 3.0) {
       println("wrong size: " + vol);
       continue;
     } else {
@@ -59,7 +53,7 @@ void strange_init() {
 }
 
 void restart() {
-  pos = new PVector(random(-1,1), random(-1,1), random(-1,1));
+  newPos();
   for(int i = 0; i < 10; i++) {
     x_coeffs[i] = random(-1.2, 1.2);
     y_coeffs[i] = random(-1.2, 1.2);
@@ -69,16 +63,23 @@ void restart() {
   // printArray(y_coeffs);
   // printArray(z_coeffs);
 }
+void newPos() {
+  pos = new PVector(random(-1,1), random(-1,1), random(-1,1));
+}
 
 void warmup(int n) {
   PVector tmp = new PVector();
+  int restarts = 0;
   for(int i =0; i < n; i++) {
     step();
     if (hasNAN(pos)) {
-      println("restart because of NAN");
+      restarts++;
       restart();
       i = 0;
     }
+  }
+  if (restarts>0) {
+    println(restarts + " restarts before finding a viable candidate");
   }
 }
 boolean hasNAN(PVector p) {
@@ -145,17 +146,67 @@ void setTheScene() {
   lights();
   fill(#AAAAAA);
   stroke(120, 255,0,39);
-  strokeWeight(0.3);
+  strokeWeight(2.3);
   // noStroke();
   noFill();
-
 }
+
+
+int idx = 0;
+int type = 0;
 
 void keyPressed() {
   if ('q' == key)
     exit();
   if ('r' == key)
     strange_init();
+  if ('R' == key)
+    newPos();
+  
+  if ('x' == key) {
+    type = 0;
+  }
+  if ('y' == key) {
+    type = 1;
+  }
+  if ('z' == key) {
+    type = 2;
+  }
+  if ('n' == key) {
+    idx = idx == 9 ? 0 : idx+1;
+  }
+  if ('p' == key) {
+    idx = idx == 0 ? 9 : idx -1;
+  }
+
+  if ('<' == key) {
+    nudge(-0.01);
+  }
+  if ('>' == key) {
+    nudge(0.01);
+  }
+
+  if (',' == key) {
+    nudge(-0.001);
+  }
+  if ('.' == key) {
+    nudge(0.001);
+  }
+
+  
+  println("Type:" + type + " @ idx: " + idx);
+}
+
+void nudge(float amount) {
+  if (type == 0) {
+    x_coeffs[idx] += amount;
+  }
+  if (type == 1) {
+    y_coeffs[idx] += amount;
+  }
+  if (type == 2) {
+    z_coeffs[idx] += amount;
+  }
 }
 
 
