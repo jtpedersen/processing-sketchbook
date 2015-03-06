@@ -14,7 +14,7 @@ void draw() {
   setTheScene();
 
   beginShape();
-  for(int i = 0; i < 1000; i++) {
+  for(int i = 0; i < 10000; i++) {
     vertex(100.0 * pos.x, 100.0 * pos.y, 100.0 * pos.z);
     // print(pos);
     step();
@@ -28,32 +28,34 @@ float[] y_coeffs = new float[10];
 float[] z_coeffs = new float[10];
 
 void strange_init() {
-
-  restart();
-  // out of bounds
-  float bbox = 2;
-  for(int i =0; i< 100; i++) {
-    step();
-    if (pos.x > bbox || pos.y > bbox || pos.z > bbox ||
-      pos.x < -bbox || pos.y < -bbox || pos.z < -bbox) {
-      println("far out" + pos);
-      restart();
-      i = 0;
+  
+  boolean gotOne = false;
+  while (!gotOne) {
+    restart();
+    warmup(1000);
+    determine_bb();
+    if (hasNAN(pos)) {
+      println("w00000000000000t");
     }
 
+    float vol = volume();
+    float md = maxDim();
+    println("Candidate volume: " + vol + " with a maxdDim of " + md);
+    if (vol > 10.0 || vol < 1.0) {
+      println("wrong size: " + vol);
+      continue;
+    } else {
+      gotOne = true;
+      println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+    }
+    // if (10e10 * md < 1.0) {
+    //   println("wrong md: " + md);
+    //   continue;
+    // } else {
+    //   gotOne = true;
+    //   println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+    // }
   }
-
-  // fixpoint
-  PVector tmp = pos.get();
-  step();
-
-  if (tmp.dist(pos) < .01) {
-    println("fixpoint");
-    strange_init();
-  }
-  
-  
-  
 }
 
 void restart() {
@@ -67,6 +69,48 @@ void restart() {
   // printArray(y_coeffs);
   // printArray(z_coeffs);
 }
+
+void warmup(int n) {
+  PVector tmp = new PVector();
+  for(int i =0; i < n; i++) {
+    step();
+    if (hasNAN(pos)) {
+      println("restart because of NAN");
+      restart();
+      i = 0;
+    }
+  }
+}
+boolean hasNAN(PVector p) {
+  return Float.isNaN(p.x) || Float.isNaN(p.y) || Float.isNaN(p.z);
+}
+
+
+PVector bbmin = new PVector();
+PVector bbmax = new PVector();
+void determine_bb() {
+  bbmin = pos.get();
+  bbmax = pos.get();
+  for(int i =0; i< 1000; i++) {
+    step();
+    bbmin.x = min(pos.x, bbmin.x);
+    bbmin.y = min(pos.y, bbmin.y);
+    bbmin.z = min(pos.z, bbmin.z);
+    bbmax.x = max(pos.x, bbmax.x);
+    bbmax.y = max(pos.y, bbmax.y);
+    bbmax.z = max(pos.z, bbmax.z);
+  }
+  //println(bbmin + " -> " + bbmax + ": Volume" + volume());
+}
+
+float volume() {
+  return (bbmax.x - bbmin.x) * (bbmax.y - bbmin.y) * (bbmax.z - bbmin.z);
+}
+
+float maxDim() {
+  return max( (bbmax.x - bbmin.x), max( (bbmax.y - bbmin.y),  (bbmax.z - bbmin.z)));
+}
+
 
 void step() {
   PVector next = new PVector();
@@ -100,7 +144,7 @@ void setTheScene() {
   background(0);
   lights();
   fill(#AAAAAA);
-  stroke(255,0,39);
+  stroke(120, 255,0,39);
   strokeWeight(0.3);
   // noStroke();
   noFill();
