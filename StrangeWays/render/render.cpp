@@ -145,7 +145,8 @@ void iterate(size_t cnt) {
 	step();
 	registerPosistionToCanvas();
 	if (i% (cnt/100) == 0)
-	    cout << "." << endl;
+	    cout << "\r" << (i / (cnt/100)) << " %" << std::flush;
+	
     }
 }
 
@@ -176,7 +177,7 @@ void tonemap() {
     float inv_scale = 1.0 / maxHits;
     for(int i = 0; i < W*H; i++) {
 	if (canvas[i] > 0) 
-	    image[i] = glm::rgbColor(glm::vec3(canvas[i] * canvas[i] * inv_scale, .7, .8));
+	    image[i] = glm::rgbColor(glm::vec3(pow(canvas[i], 3) * inv_scale, .7, .8));
 	// cout << canvas[i] << (( i%80 == 79 ) ? "\n" : " ");
 	// if ( i > (H/2*W) && i < ((10 + H)/2*W)) 
 	//     cout << glm::to_string(image[i]) << (( i%80 == 79 ) ? "\n" : " ");
