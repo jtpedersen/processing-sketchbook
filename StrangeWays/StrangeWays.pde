@@ -13,7 +13,7 @@ void draw() {
   setTheScene();
 
   beginShape(POINTS);
-  for(int i = 0; i < 10000; i++) {
+  for(int i = 0; i < 50000; i++) {
     vertex(100.0 * pos.x, 100.0 * pos.y, 100.0 * pos.z);
     // print(pos);
     step();
@@ -162,6 +162,9 @@ void keyPressed() {
     strange_init();
   if ('R' == key)
     newPos();
+  if ('s' == key) {
+    save();
+  }
   
   if ('x' == key) {
     type = 0;
@@ -210,3 +213,10 @@ void nudge(float amount) {
 }
 
 
+void save() {
+  printArray(cam.getPosition());
+  printArray(cam.getRotations());
+  printArray(x_coeffs);
+  printArray(y_coeffs);
+  printArray(z_coeffs);  
+}
