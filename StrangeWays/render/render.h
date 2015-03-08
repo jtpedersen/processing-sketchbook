@@ -9,6 +9,7 @@
 #include <glm/vec4.hpp>// glm::vec4
 #include <glm/mat4x4.hpp> // glm::mat4
 #include <glm/gtc/matrix_transform.hpp> //lookAt etc
+#include <glm/gtx/transform.hpp>
 #include <glm/gtx/color_space.hpp>
 #include <glm/ext.hpp> // << friends
 

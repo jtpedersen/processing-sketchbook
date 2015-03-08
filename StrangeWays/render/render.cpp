@@ -47,6 +47,9 @@ void setupCamera() {
     cam = glm::lookAt(arr2vec(cam_pos),
 		      glm::vec3(0.0),
 		      glm::vec3(0,1,0));
+    cam = cam * glm::rotate(cam_rotations[0], glm::vec3(1.0f, 0.0f, 0.0f));
+    cam = cam * glm::rotate(cam_rotations[1], glm::vec3(0.0f, 1.0f, 0.0f));
+    cam = cam * glm::rotate(cam_rotations[2], glm::vec3(0.0f, 0.0f, 1.0f));
 }
 
 glm::vec3 arr2vec(float * a) {
@@ -120,11 +123,11 @@ void measureBounds() {
     canvas_range = std::max(ranges.x, ranges.y);
     glm::vec2 center = (projected_min + projected_max) * 0.5f;
     // create offset and add little border
-    canvas_offset.x = (center.x - (canvas_range * 0.6f)) * -1.0f;
-    canvas_offset.y = (center.y - (canvas_range * 0.6f)) * -1.0f;
+    canvas_offset.x = (center.x - (canvas_range * 0.525f)) * -1.0f;
+    canvas_offset.y = (center.y - (canvas_range * 0.525f)) * -1.0f;
     
     int image_range = canvas_range == ranges.x ? W : H;
-    canvas2ImageScaling = (float)image_range / (1.2 * canvas_range);
+    canvas2ImageScaling = (float)image_range / (1.05 * canvas_range);
 
     cout << "Scaling stuff: offset:\n" << glm::to_string(canvas_offset) << " and scaling: " << canvas2ImageScaling << endl;
 
@@ -213,7 +216,7 @@ int main(int argc, char **argv) {
     initCanvas();
     warmup();
     measureBounds();
-    iterate(1000000000);
+    iterate(100000000);
     tonemap();
     saveImage();
     cleanup();
