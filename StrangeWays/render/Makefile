@@ -1,2 +1,7 @@
+CXXFLAGS=-I /opt/local/include
 run:
-	g++ -std=c++11 -Wall render.cpp -O3 -fopenmp -o render && ./render ../saves/blade.dump
+	g++ -std=c++11 ${CXXFLAGS} -Wall render.cpp -O3  -o render && ./render ../saves/blade.dump
+run_long:
+	g++ -std=c++11 ${CXXFLAGS} -Wall render.cpp -O3  -o render && ./render ../saves/blade.dump 10000000000
+
+
