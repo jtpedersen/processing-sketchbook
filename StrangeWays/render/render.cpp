@@ -218,6 +218,21 @@ void registerPosistionToCanvas(Canvas& canvas, const glm::vec3& p) {
 }
 
 
+float de(const Canvas& c, int x, int y) {
+    float res = c[x + y *W];
+    res += .5 * c[(x+1) + y * W];
+    res += .5 * c[(x-1) + y * W];
+    res += .5 * c[x + (y+1) * W];
+    res += .5 * c[x + (y-1) * W];
+
+    res += .24 * c[(x+1) + (y+1) * W];
+    res += .24 * c[(x-1) + (y-1) * W];
+    res += .24 * c[(x+1) + (y-1) * W];
+    res += .24 * c[(x-1) + (y+1) * W];
+
+
+    return res * (1.0  / ( .5 * 4.0 + .24 * 4.0));
+}
 
 Image tonemap(const Canvas& canvas) {
     unsigned int maxHits = 0;
@@ -225,13 +240,16 @@ Image tonemap(const Canvas& canvas) {
 	maxHits = c > maxHits ? c : maxHits;
     float inv_scale = 1.0 / maxHits;
     Image image;
-    for(int i = 0; i < W*H; i++) {
-	if (canvas[i] > 0) 
-	    image[i] = glm::rgbColor(glm::vec3(pow(canvas[i], 3) * inv_scale, .7, .8));
+    for(int j = 1; j < H-1; j++) {
+	for(int i = 1; i < W-1; i++) {
+	    auto idx = i + j * W;
+	    auto cnt = de(canvas, i, j);
+	if (cnt > 0) 
+	    image[idx] = glm::rgbColor(glm::vec3(pow(cnt, 5) * inv_scale, .7, .8));
 	// cout << canvas[i] << (( i%80 == 79 ) ? "\n" : " ");
 	// if ( i > (H/2*W) && i < ((10 + H)/2*W)) 
 	//     cout << glm::to_string(image[i]) << (( i%80 == 79 ) ? "\n" : " ");
-
+	}
 
     }
     cout << "When tonemapping, ze largest cnt was: " << maxHits << endl;
