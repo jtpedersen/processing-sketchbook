@@ -89,6 +89,7 @@ boolean hasNAN(PVector p) {
 
 PVector bbmin = new PVector();
 PVector bbmax = new PVector();
+
 void determine_bb() {
   bbmin = pos.get();
   bbmax = pos.get();

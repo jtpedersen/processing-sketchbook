@@ -2,6 +2,7 @@
 #define RENDER_H_
 
 #include <fstream>
+#include <array>
 
 #define GLM_FORCE_RADIANS
 #include <glm/vec2.hpp>// glm::vec2
@@ -13,20 +14,28 @@
 #include <glm/gtx/color_space.hpp>
 #include <glm/ext.hpp> // << friends
 
+
+#define W 2046
+#define H 2046
+
+using Canvas = std::array<unsigned int, W*H>;
+using Image  = std::array<glm::vec3,  W*H>;
+
 void loadCoeffs(const char *filename);
 void streamin(float* dst, int cnt, std::ifstream& ifs);
 void setupCamera();
+glm::vec3 randomPos();
 glm::vec3 arr2vec(float * a);
 void initCanvas();
-void step();
+glm::vec3 step(glm::vec3 p);
 float quad_iterate(glm::vec3 p, float* a);
 void cleanup();
 void warmup();
 void measureBounds();
-void iterate(size_t cnt);
-void registerPosistionToCanvas();
-void tonemap();
-void saveImage();
-
+Canvas iterate(size_t cnt);
+void registerPosistionToCanvas(Canvas& canvas, const glm::vec3& p);
+Image tonemap(const Canvas& canvas);
+void saveImage(const Image&);
+void thread_iterate(size_t cnt, Canvas& canvas);
 
 #endif /* !RENDER_H_ */
