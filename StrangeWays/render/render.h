@@ -5,6 +5,7 @@
 #include <array>
 
 #define GLM_FORCE_RADIANS
+#define GLM_SWIZZLE 
 #include <glm/vec2.hpp>// glm::vec2
 #include <glm/vec3.hpp>// glm::vec3
 #include <glm/vec4.hpp>// glm::vec4
@@ -15,8 +16,8 @@
 #include <glm/ext.hpp> // << friends
 
 
-#define W 2046
-#define H 2046
+#define W 800
+#define H 800
 
 using Canvas = std::array<unsigned int, W*H>;
 using Image  = std::array<glm::vec3,  W*H>;

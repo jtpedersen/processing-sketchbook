@@ -111,45 +111,71 @@ glm::vec2 projected_max;
 glm::vec2 canvas_offset;
 float canvas_range;
 float canvas2ImageScaling;
+glm::vec3 aabb_max, aabb_min;
 
 void measureBounds() {
-    glm::vec4 projected = cam * glm::vec4(pos, 0);
-    projected_max = projected_min = glm::vec2(projected.x, projected.y);
+    aabb_max = aabb_min = pos;
     for(int i = 0; i < 100000; i++) {
 	pos = step(pos);
-	glm::vec4 projected = cam * glm::vec4(pos, 0);
-	projected_max.x = std::max(projected.x, projected_max.x);
-	projected_max.y = std::max(projected.y, projected_max.y);
-	projected_min.x = std::min(projected.x, projected_min.x);
-	projected_min.y = std::min(projected.y, projected_min.y);
+	aabb_max.x = std::max(pos.x, aabb_max.x);
+	aabb_max.y = std::max(pos.y, aabb_max.y);
+	aabb_max.z = std::max(pos.z, aabb_max.z);
+	aabb_min.x = std::min(pos.x, aabb_min.x);
+	aabb_min.y = std::min(pos.y, aabb_min.y);
+	aabb_min.z = std::min(pos.z, aabb_min.z);
+    }
+    cout << glm::to_string(aabb_min) << " ---- " << glm::to_string(aabb_max) << endl;
+    auto center = (aabb_max + aabb_min) * 0.5f;
+    cout << "Center: " << glm::to_string(center) << endl;
+    // move to center
+//    cam  = glm::translate(cam, -center);
+
+    // project all corners to screen to see how it must be scale to fill image nicely
+    auto p = cam * glm::vec4(aabb_min, 0.0f);
+    projected_max = projected_min = glm::vec2(p.x, p.y);
+    for(int i = 0; i < 8; i++)  {
+	float x = (i & 0x1) ? aabb_min.x : aabb_max.x;
+	float y = (i & 0x2) ? aabb_min.y : aabb_max.y;
+	float z = (i & 0x4) ? aabb_min.z : aabb_max.z;
+	glm::vec4 projected = cam * glm::vec4(x,y,z, 1.0);
+	projected_min.x = min(projected.x, projected_min.x);
+	projected_min.y = min(projected.y, projected_min.y);
+	projected_max.x = max(projected.x, projected_max.x);
+	projected_max.y = max(projected.y, projected_max.y);
     }
     cout << glm::to_string(projected_min) << " ---- " << glm::to_string(projected_max) << endl;
-
-    // create projecting mappings
-    glm::vec2 ranges = projected_max - projected_min;
-    // select largest /XXXXXXX think about aspect ratios
-    canvas_range = std::max(ranges.x, ranges.y);
-    glm::vec2 center = (projected_min + projected_max) * 0.5f;
-    // create offset and add little border
-    canvas_offset.x = (center.x - (canvas_range * 0.525f)) * -1.0f;
-    canvas_offset.y = (center.y - (canvas_range * 0.525f)) * -1.0f;
-    
-    int image_range = canvas_range == ranges.x ? W : H;
-    canvas2ImageScaling = (float)image_range / (1.05 * canvas_range);
-
-    cout << "Scaling stuff: offset:\n" << glm::to_string(canvas_offset) << " and scaling: " << canvas2ImageScaling << endl;
-
-    assert((projected_min + canvas_offset).x >= 0);
-    assert((projected_min + canvas_offset).y >= 0);
-
-    assert((projected_min + canvas_offset).x * canvas2ImageScaling < W);
-    assert((projected_min + canvas_offset).y * canvas2ImageScaling < H);
-    assert((projected_max + canvas_offset).x * canvas2ImageScaling >= 0);
-    assert((projected_max + canvas_offset).y * canvas2ImageScaling >= 0);
-    assert((projected_max + canvas_offset).x * canvas2ImageScaling < W);
-    assert((projected_max + canvas_offset).y * canvas2ImageScaling < H);
+    auto range = projected_max - projected_min;
+    float scale = (range.x > range.y ? W : H) / max(range.x, range.y);
+    cout << "Scale: " << scale << endl;
+    cam = glm::scale(cam, glm::vec3(scale));
+    cout << "CAM: " << glm::to_string(cam) << endl;
 
 }
+
+
+void registerPosistionToCanvas(Canvas& canvas, const glm::vec3& p) {
+    glm::vec4 projected = cam * glm::vec4(p, 1.0);
+    // glm::vec2 canvas_space(projected.x, projected.y);
+    // //canvas_space += canvas_offset;
+    // // cout << glm::to_string(canvas_space) << endl;
+    // glm::ivec2 pixel = glm::ivec2(canvas_space * canvas2ImageScaling);
+    glm::ivec2 pixel = glm::ivec2(projected.x - projected_min.x, projected.y - projected_min.y);
+    // clamp and discard
+    if (pixel.x >= 0 && pixel.x < W && pixel.y >= 0 && pixel.y < H) {
+	size_t idx = pixel.y*W + pixel.x;
+	// check zbuffer
+	// if (zbuffer[idx] > projected.z) {
+	    canvas[idx]++;
+	//     zbuffer[idx] = projected.z;
+	// }
+    }   // else
+    // 	cout << "discard pixel: " << glm::to_string(pixel) << endl;
+    // static ofstream fileOut;
+    // if (!fileOut.is_open())
+    // 	fileOut.open("foo.dat");
+    // fileOut << pos.x << " " << pos.y << " " << pos.z << " " << pixel.x << " " << pixel.y << endl;
+}
+
 
 void threadIterate(size_t cnt, Canvas& canvas) {
 
@@ -188,33 +214,7 @@ Canvas iterate(size_t cnt) {
 	for(unsigned int j = 0; j < canvis[i].size(); j++)
 	    canvis[0][j] += canvis[i][j];
     }
-
-// if (i% (cnt/100) == 0)
-	//     cout << "\r" << (i / (cnt/100)) << " %" << std::flush;
     return canvis[0];
-}
-
-void registerPosistionToCanvas(Canvas& canvas, const glm::vec3& p) {
-    glm::vec4 projected = cam * glm::vec4(p, 0);
-    glm::vec2 canvas_space(projected.x, projected.y);
-    canvas_space += canvas_offset;
-    // cout << glm::to_string(canvas_space) << endl;
-    glm::ivec2 pixel = glm::ivec2(canvas_space * canvas2ImageScaling);
-    // clamp and discard
-    if (pixel.x >= 0 && pixel.x < W && pixel.y >= 0 && pixel.y < H) {
-	size_t idx = pixel.y*W + pixel.x;
-	// check zbuffer
-	// if (zbuffer[idx] > projected.z) {
-	    canvas[idx]++;
-	//     zbuffer[idx] = projected.z;
-	// }
-    }
-    // else
-    // 	cout << "discard pixel: " << glm::to_string(pixel) << endl;
-    // static ofstream fileOut;
-    // if (!fileOut.is_open())
-    // 	fileOut.open("foo.dat");
-    // fileOut << pos.x << " " << pos.y << " " << pos.z << " " << pixel.x << " " << pixel.y << endl;
 }
 
 
@@ -286,6 +286,7 @@ int main(int argc, char **argv) {
     setupCamera();
     initCanvas();
     warmup();
+    measureBounds();
     measureBounds();
     auto canvas = iterate(iterations);
     auto img = tonemap(canvas);
