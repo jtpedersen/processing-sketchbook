@@ -6,6 +6,7 @@
 #include <iterator>
 #include <iostream>
 #include <limits>
+#include "colors.h"
 
 using namespace std;
 glm::vec3 pos;
@@ -147,7 +148,7 @@ void measureBounds() {
     auto range = projected_max - projected_min;
     float scale = (range.x > range.y ? W : H) / max(range.x, range.y);
     cout << "Scale: " << scale << endl;
-    cam = glm::scale(cam, glm::vec3(scale));
+    cam = glm::scale(cam, glm::vec3(.96 * scale));
     cout << "CAM: " << glm::to_string(cam) << endl;
 
 }
@@ -155,10 +156,6 @@ void measureBounds() {
 
 void registerPosistionToCanvas(Canvas& canvas, const glm::vec3& p) {
     glm::vec4 projected = cam * glm::vec4(p, 1.0);
-    // glm::vec2 canvas_space(projected.x, projected.y);
-    // //canvas_space += canvas_offset;
-    // // cout << glm::to_string(canvas_space) << endl;
-    // glm::ivec2 pixel = glm::ivec2(canvas_space * canvas2ImageScaling);
     glm::ivec2 pixel = glm::ivec2(projected.x - projected_min.x, projected.y - projected_min.y);
     // clamp and discard
     if (pixel.x >= 0 && pixel.x < W && pixel.y >= 0 && pixel.y < H) {
@@ -168,17 +165,10 @@ void registerPosistionToCanvas(Canvas& canvas, const glm::vec3& p) {
 	    canvas[idx]++;
 	//     zbuffer[idx] = projected.z;
 	// }
-    }   // else
-    // 	cout << "discard pixel: " << glm::to_string(pixel) << endl;
-    // static ofstream fileOut;
-    // if (!fileOut.is_open())
-    // 	fileOut.open("foo.dat");
-    // fileOut << pos.x << " " << pos.y << " " << pos.z << " " << pixel.x << " " << pixel.y << endl;
+    }  
 }
 
-
 void threadIterate(size_t cnt, Canvas& canvas) {
-
     // clear
     for(auto& bin: canvas)
 	bin  = 0;
@@ -195,7 +185,6 @@ void threadIterate(size_t cnt, Canvas& canvas) {
 	}
 	i += cnt/100;
 	cout << "\r" << (i / (cnt/100)) << " %" << std::flush;
-	
     }
 }
 
@@ -215,6 +204,21 @@ Canvas iterate(size_t cnt) {
 	    canvis[0][j] += canvis[i][j];
     }
     return canvis[0];
+}
+
+Canvas histogramEqualize(const Canvas& canvas) {
+    Canvas cdf(canvas);
+    std::sort(cdf.begin(), cdf.end());
+    auto start = cdf.begin();
+    while(*start == 0) start++;
+    Canvas res(canvas);
+    for(auto& p: res) {
+	if (0 == p)
+	    continue;
+	auto it = std::lower_bound(start, cdf.end(), p);
+	p = std::distance(start, it);
+    }
+    return res;
 }
 
 
@@ -243,14 +247,20 @@ Image tonemap(const Canvas& canvas) {
     for(int j = 1; j < H-1; j++) {
 	for(int i = 1; i < W-1; i++) {
 	    auto idx = i + j * W;
-	    auto cnt = de(canvas, i, j);
-	if (cnt > 0) 
-	    image[idx] = glm::rgbColor(glm::vec3(pow(cnt, 5) * inv_scale, .7, .8));
-	// cout << canvas[i] << (( i%80 == 79 ) ? "\n" : " ");
-	// if ( i > (H/2*W) && i < ((10 + H)/2*W)) 
-	//     cout << glm::to_string(image[i]) << (( i%80 == 79 ) ? "\n" : " ");
+	    // auto cnt = de(canvas, i, j);
+	    auto cnt = canvas[idx];
+	    if (cnt > 0) {
+		float r,g,b;
+		float h,s,v;
+		h = cnt* inv_scale * 360.0;
+		s = .8;
+		v = .9;
+		colors::HSVtoRGB(&r, &g, &b, h, s, v);
+		image[idx] = glm::vec3(r,g,b);
+		// cout << cnt << " --> " << glm::to_string(image[idx]) << endl;
+	    }
+	
 	}
-
     }
     cout << "When tonemapping, ze largest cnt was: " << maxHits << endl;
     return image;
@@ -268,9 +278,6 @@ void saveImage(const Image& image) {
     ofs.close();
 }
 
-void cleanup() {
-    // 
-}
 int main(int argc, char **argv) {
     const char *filename = "default.dump";
     size_t iterations = 10000000;
@@ -289,7 +296,7 @@ int main(int argc, char **argv) {
     measureBounds();
     measureBounds();
     auto canvas = iterate(iterations);
-    auto img = tonemap(canvas);
+    canvas = histogramEqualize(canvas);
+    auto img = tonemap(histogramEqualize(canvas));
     saveImage(img);
-    cleanup();
 }

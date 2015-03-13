@@ -15,9 +15,8 @@
 #include <glm/gtx/color_space.hpp>
 #include <glm/ext.hpp> // << friends
 
-
-#define W 800
-#define H 800
+#define W 4096
+#define H 4096
 
 using Canvas = std::array<unsigned int, W*H>;
 using Image  = std::array<glm::vec3,  W*H>;
@@ -35,6 +34,7 @@ void warmup();
 void measureBounds();
 Canvas iterate(size_t cnt);
 void registerPosistionToCanvas(Canvas& canvas, const glm::vec3& p);
+Canvas histogramEqualize(const Canvas& canvas);
 Image tonemap(const Canvas& canvas);
 void saveImage(const Image&);
 void thread_iterate(size_t cnt, Canvas& canvas);
