@@ -222,20 +222,59 @@ Canvas histogramEqualize(const Canvas& canvas) {
 }
 
 
-float de(const Canvas& c, int x, int y) {
-    float res = c[x + y *W];
-    res += .5 * c[(x+1) + y * W];
-    res += .5 * c[(x-1) + y * W];
-    res += .5 * c[x + (y+1) * W];
-    res += .5 * c[x + (y-1) * W];
+// float de(const Canvas& c, int x, int y) {
+//     float res = 2.0 * c[x + y *W];
+//     res += .5 * c[(x+1) + y * W];
+//     res += .5 * c[(x-1) + y * W];
+//     res += .5 * c[x + (y+1) * W];
+//     res += .5 * c[x + (y-1) * W];
 
-    res += .24 * c[(x+1) + (y+1) * W];
-    res += .24 * c[(x-1) + (y-1) * W];
-    res += .24 * c[(x+1) + (y-1) * W];
-    res += .24 * c[(x-1) + (y+1) * W];
+//     res += .24 * c[(x+1) + (y+1) * W];
+//     res += .24 * c[(x-1) + (y-1) * W];
+//     res += .24 * c[(x+1) + (y-1) * W];
+//     res += .24 * c[(x-1) + (y+1) * W];
 
 
-    return res * (1.0  / ( .5 * 4.0 + .24 * 4.0));
+//     return res * (1.0  / ( 2.0 + .5 * 4.0 + .24 * 4.0));
+// }
+
+float de(const Canvas& c, int x, int y, int cnt) {
+    int n = c[x + y *W];
+    int a = 1;
+    int w = 1;
+    while (n < cnt && w < 10) {
+	int prev = n;
+	if ( (x - w) < 0 || (y -w) < 0 || (x + w) >= W || (y + w) >= H)
+	    break;
+	
+	for(int i = -w; i <= w; i++) {
+	    n += c[ (x + i) + (y + w) * W];
+	    n += c[ (x + i) + (y - w) * W];
+	    a+=2;
+	}
+	for(int i = -(w+1); i < w; i++) {
+	    n += c[ (x + w) + (y + 1) * W];
+	    n += c[ (x - w) + (y + 1) * W];
+	    a+=2;
+	}
+	w += 1;
+	if (prev == n) {
+	    break;
+	    // surrounded by the empty space
+	}
+    }
+    return (5 * cnt * n) / a;
+}
+
+Canvas DEFilter(const Canvas& canvas, int cnt) {
+    Canvas res(canvas);
+    for(int j = 1; j < H-1; j++) {
+	for(int i = 1; i < W-1; i++) {
+	    auto idx = i + j * W;
+	    res[idx] = de(canvas, i, j, cnt);
+	}
+    }
+    return res;
 }
 
 Image tonemap(const Canvas& canvas) {
@@ -247,14 +286,14 @@ Image tonemap(const Canvas& canvas) {
     for(int j = 1; j < H-1; j++) {
 	for(int i = 1; i < W-1; i++) {
 	    auto idx = i + j * W;
-	    // auto cnt = de(canvas, i, j);
-	    auto cnt = canvas[idx];
-	    if (cnt > 0) {
+	    auto density = float(canvas[idx]);
+	    if (density > 0) {
+		density *= inv_scale;
 		float r,g,b;
 		float h,s,v;
-		h = cnt* inv_scale * 360.0;
-		s = .8;
-		v = .9;
+		h = (1.0 - density) * 360.0;
+		s = .89;
+		v = .15 + .85 * density;
 		colors::HSVtoRGB(&r, &g, &b, h, s, v);
 		image[idx] = glm::vec3(r,g,b);
 		// cout << cnt << " --> " << glm::to_string(image[idx]) << endl;
@@ -296,7 +335,12 @@ int main(int argc, char **argv) {
     measureBounds();
     measureBounds();
     auto canvas = iterate(iterations);
+    canvas = DEFilter(canvas, 100);
     canvas = histogramEqualize(canvas);
-    auto img = tonemap(histogramEqualize(canvas));
+    auto img = tonemap(canvas);
     saveImage(img);
 }
+
+
+
+

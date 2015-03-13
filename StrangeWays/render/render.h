@@ -35,6 +35,7 @@ void measureBounds();
 Canvas iterate(size_t cnt);
 void registerPosistionToCanvas(Canvas& canvas, const glm::vec3& p);
 Canvas histogramEqualize(const Canvas& canvas);
+Canvas DEFilter(const Canvas& canvas, int cnt);
 Image tonemap(const Canvas& canvas);
 void saveImage(const Image&);
 void thread_iterate(size_t cnt, Canvas& canvas);
