@@ -28,7 +28,6 @@ glm::vec3 randomPos();
 glm::vec3 arr2vec(float * a);
 void initCanvas();
 glm::vec3 step(const glm::vec3& p);
-float quad_iterate(const glm::vec3& p, float* a);
 void cleanup();
 void warmup();
 void measureBounds();
@@ -37,7 +36,7 @@ void registerPosistionToCanvas(Canvas& canvas, const glm::vec3& p);
 Canvas histogramEqualize(const Canvas& canvas);
 Canvas DEFilter(const Canvas& canvas, int cnt);
 Image tonemap(const Canvas& canvas);
-void saveImage(const Image&);
+void saveImage(const Image&, std::string filename);
 void thread_iterate(size_t cnt, Canvas& canvas);
 
 #endif /* !RENDER_H_ */

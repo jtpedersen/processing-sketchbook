@@ -115,9 +115,6 @@ glm::vec3 step(const glm::vec3& p) {
     next.z += z_coeffs[8]*p.x*p.z;
     next.z += z_coeffs[9]*p.y*p.z;
 
-    // next.x = quad_iterate(p, x_coeffs);
-    // next.y = quad_iterate(p, y_coeffs);
-    // next.z = quad_iterate(p, z_coeffs);
     assert(isfinite(next.x));
     assert(isfinite(next.y));
     assert(isfinite(next.z));
@@ -125,24 +122,6 @@ glm::vec3 step(const glm::vec3& p) {
 }
 
 
-float quad_iterate(const glm::vec3& p, float* a) {
-    float res = 0;
-    res += a[0];
-
-    res += a[1]*p.x;
-    res += a[2]*p.y;
-    res += a[3]*p.z;
-
-    res += a[4]*p.x*p.x;
-    res += a[5]*p.y*p.y;
-    res += a[6]*p.z*p.z;
-
-    res += a[7]*p.x*p.y;
-    res += a[8]*p.x*p.z;
-    res += a[9]*p.y*p.z;
-
-    return res;
-}
 
 glm::vec3 randomPos() {
     static std::random_device rd;
@@ -341,9 +320,9 @@ Image tonemap(const Canvas& canvas) {
     return image;
 }
 
-void saveImage(const Image& image) {
+void saveImage(const Image& image, std::string filename) {
     ofstream ofs;
-    ofs.open("file.ppm", std::ofstream::out | std::ofstream::binary);
+    ofs.open(filename, std::ofstream::out | std::ofstream::binary);
     ofs << "P6\n" << W << " " << H << "\n255\n";
     assert(image.size() ==  (W * H));
     for(glm::vec3 c: image) {
@@ -376,7 +355,7 @@ int main(int argc, char **argv) {
     // canvas = DEFilter(canvas, 10);
     canvas = histogramEqualize(canvas);
     auto img = tonemap(canvas);
-    saveImage(img);
+    saveImage(img, std::string(filename) + ".ppm");
 }
 
 
