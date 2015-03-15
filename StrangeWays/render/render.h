@@ -2,7 +2,7 @@
 #define RENDER_H_
 
 #include <fstream>
-#include <array>
+#include <vector>
 
 #define GLM_FORCE_RADIANS
 #define GLM_SWIZZLE 
@@ -15,11 +15,11 @@
 #include <glm/gtx/color_space.hpp>
 #include <glm/ext.hpp> // << friends
 
-#define W 4096
-#define H 4096
+#define W 1024
+#define H 1024
 
-using Canvas = std::array<unsigned int, W*H>;
-using Image  = std::array<glm::vec3,  W*H>;
+using Canvas = std::vector<unsigned int>;
+using Image  = std::vector<glm::vec3>;
 
 void loadCoeffs(const char *filename);
 void streamin(float* dst, int cnt, std::ifstream& ifs);

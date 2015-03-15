@@ -32,8 +32,6 @@ class PPsaver {
       return false;
     }
 
-
-
     if ('\b'== key) {
         filename = filename.substring(0, max(filename.length()-1, 0));
     } else if ('\n' == key) {

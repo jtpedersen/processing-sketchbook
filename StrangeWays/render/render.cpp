@@ -6,6 +6,7 @@
 #include <iterator>
 #include <iostream>
 #include <limits>
+#include <vector>
 #include "colors.h"
 
 using namespace std;
@@ -21,10 +22,11 @@ float z_coeffs[10];
 const float inv_w = 1.0 / W;
 const float inv_h = 1.0 / H;
 
-array<unsigned int,  W*H> canvas;
-array<float,  W*H> zbuffer;
+std::vector<unsigned int> canvas;
+std::vector<float> zbuffer;
 
 void loadCoeffs(const char *filename) {
+    cout << "open " << filename << endl;
     std::ifstream ifs;
     ifs.open(filename);
     streamin(cam_pos, 3, ifs);
@@ -56,12 +58,17 @@ glm::vec3 arr2vec(float * a) {
 }
 
 void initCanvas() {
-    for(auto& i: canvas)
-	i = 0;
-    for(auto& z: zbuffer)
-	z = std::numeric_limits<float>::max();
-
+    for(int i = 0; i < W*H; i++) {
+	canvas.push_back(0);
+	zbuffer.push_back(std::numeric_limits<float>::max());
+    }
 }
+
+void initCanvas(Canvas& canvas) {
+    for(int i = 0; i < W*H; i++) 
+	canvas.push_back(0);
+}
+
 
 glm::vec3 step(glm::vec3 p) {
     glm::vec3 next;
@@ -170,8 +177,7 @@ void registerPosistionToCanvas(Canvas& canvas, const glm::vec3& p) {
 
 void threadIterate(size_t cnt, Canvas& canvas) {
     // clear
-    for(auto& bin: canvas)
-	bin  = 0;
+    initCanvas(canvas);
     // varmup
     auto p = randomPos();
     for(size_t i = 0 ; i < 10000; i++) 
@@ -222,22 +228,6 @@ Canvas histogramEqualize(const Canvas& canvas) {
 }
 
 
-// float de(const Canvas& c, int x, int y) {
-//     float res = 2.0 * c[x + y *W];
-//     res += .5 * c[(x+1) + y * W];
-//     res += .5 * c[(x-1) + y * W];
-//     res += .5 * c[x + (y+1) * W];
-//     res += .5 * c[x + (y-1) * W];
-
-//     res += .24 * c[(x+1) + (y+1) * W];
-//     res += .24 * c[(x-1) + (y-1) * W];
-//     res += .24 * c[(x+1) + (y-1) * W];
-//     res += .24 * c[(x-1) + (y+1) * W];
-
-
-//     return res * (1.0  / ( 2.0 + .5 * 4.0 + .24 * 4.0));
-// }
-
 float de(const Canvas& c, int x, int y, int cnt) {
     int n = c[x + y *W];
     int a = 1;
@@ -283,10 +273,11 @@ Image tonemap(const Canvas& canvas) {
 	maxHits = c > maxHits ? c : maxHits;
     float inv_scale = 1.0 / maxHits;
     Image image;
-    for(int j = 1; j < H-1; j++) {
-	for(int i = 1; i < W-1; i++) {
+    for(int j = 0; j < H; j++) {
+	for(int i = 0; i < W; i++) {
 	    auto idx = i + j * W;
 	    auto density = float(canvas[idx]);
+	    glm::vec3 col(0.0f);
 	    if (density > 0) {
 		density *= inv_scale;
 		float r,g,b;
@@ -295,12 +286,13 @@ Image tonemap(const Canvas& canvas) {
 		s = .89;
 		v = .15 + .85 * density;
 		colors::HSVtoRGB(&r, &g, &b, h, s, v);
-		image[idx] = glm::vec3(r,g,b);
+		col = glm::vec3(r,g,b);
 		// cout << cnt << " --> " << glm::to_string(image[idx]) << endl;
 	    }
-	
+	    image.push_back(col);
 	}
     }
+    assert(image.size() ==  (W * H));
     cout << "When tonemapping, ze largest cnt was: " << maxHits << endl;
     return image;
 }
@@ -309,6 +301,7 @@ void saveImage(const Image& image) {
     ofstream ofs;
     ofs.open("file.ppm", std::ofstream::out | std::ofstream::binary);
     ofs << "P6\n" << W << " " << H << "\n255\n";
+    assert(image.size() ==  (W * H));
     for(glm::vec3 c: image) {
 	ofs <<  static_cast<unsigned char>(c.x * 255);
 	ofs <<  static_cast<unsigned char>(c.y * 255);
@@ -318,6 +311,7 @@ void saveImage(const Image& image) {
 }
 
 int main(int argc, char **argv) {
+    cout << "Hi" << endl;
     const char *filename = "default.dump";
     size_t iterations = 10000000;
     if (argc < 1) {
@@ -335,7 +329,7 @@ int main(int argc, char **argv) {
     measureBounds();
     measureBounds();
     auto canvas = iterate(iterations);
-    canvas = DEFilter(canvas, 100);
+    canvas = DEFilter(canvas, 10);
     canvas = histogramEqualize(canvas);
     auto img = tonemap(canvas);
     saveImage(img);

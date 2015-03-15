@@ -40,15 +40,7 @@ void strange_init() {
       continue;
     } else {
       gotOne = true;
-      println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
     }
-    // if (10e10 * md < 1.0) {
-    //   println("wrong md: " + md);
-    //   continue;
-    // } else {
-    //   gotOne = true;
-    //   println("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-    // }
   }
 }
 
@@ -164,7 +156,7 @@ void keyPressed() {
   if ('R' == key)
     newPos();
   if ('s' == key) {
-    save();
+    saveFile();
   }
   
   if ('x' == key) {
@@ -214,10 +206,20 @@ void nudge(float amount) {
 }
 
 
-void save() {
-  printArray(cam.getPosition());
-  printArray(cam.getRotations());
-  printArray(x_coeffs);
-  printArray(y_coeffs);
-  printArray(z_coeffs);  
+void saveFile() {
+  String filename = "default-" + millis();
+  PrintWriter pw = createWriter("saves/" + filename + ".sav");
+  
+  writeArray(pw, cam.getPosition());
+  writeArray(pw, cam.getRotations());
+  writeArray(pw, x_coeffs);
+  writeArray(pw, y_coeffs);
+  writeArray(pw, z_coeffs);
+
+  pw.close();
+}
+
+void writeArray(PrintWriter pw, float[] arr) {
+  for(int i = 0; i < arr.length; i++)
+    pw.write(arr[i] + "\n");
 }
