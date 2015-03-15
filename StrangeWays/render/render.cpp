@@ -72,27 +72,20 @@ void initCanvas(Canvas& canvas) {
 
 glm::vec3 step(const glm::vec3& p) {
     glm::vec3 next;
-
-    const float xx = p.x*p.x;
-    const float yy = p.y*p.y;
-    const float zz = p.z*p.z;
-    const float xy = p.x*p.y;
-    const float xz = p.x*p.z;
-    const float yz = p.y*p.z;
-
+    
     next.x = x_coeffs[0];
 
     next.x += x_coeffs[1]*p.x;
     next.x += x_coeffs[2]*p.y;
     next.x += x_coeffs[3]*p.z;
 
-    next.x += x_coeffs[4]*xx;
-    next.x += x_coeffs[5]*yy;
-    next.x += x_coeffs[6]*zz;
+    next.x += x_coeffs[4]*p.x*p.x;
+    next.x += x_coeffs[5]*p.y*p.y;
+    next.x += x_coeffs[6]*p.z*p.z;
 
-    next.x += x_coeffs[7]*xy;
-    next.x += x_coeffs[8]*xz;
-    next.x += x_coeffs[9]*yz;
+    next.x += x_coeffs[7]*p.x*p.y;
+    next.x += x_coeffs[8]*p.x*p.z;
+    next.x += x_coeffs[9]*p.y*p.z;
 
     next.y = y_coeffs[0];
 
@@ -100,13 +93,13 @@ glm::vec3 step(const glm::vec3& p) {
     next.y += y_coeffs[2]*p.y;
     next.y += y_coeffs[3]*p.z;
 
-    next.y += y_coeffs[4]*xx;
-    next.y += y_coeffs[5]*yy;
-    next.y += y_coeffs[6]*zz;
+    next.y += y_coeffs[4]*p.x*p.x;
+    next.y += y_coeffs[5]*p.y*p.y;
+    next.y += y_coeffs[6]*p.z*p.z;
 
-    next.y += y_coeffs[7]*xy;
-    next.y += y_coeffs[8]*xz;
-    next.y += y_coeffs[9]*yz;
+    next.y += y_coeffs[7]*p.x*p.y;
+    next.y += y_coeffs[8]*p.x*p.z;
+    next.y += y_coeffs[9]*p.y*p.z;
 
     next.z = z_coeffs[0];
 
@@ -114,13 +107,13 @@ glm::vec3 step(const glm::vec3& p) {
     next.z += z_coeffs[2]*p.y;
     next.z += z_coeffs[3]*p.z;
 
-    next.z += z_coeffs[4]*xx;
-    next.z += z_coeffs[5]*yy;
-    next.z += z_coeffs[6]*zz;
+    next.z += z_coeffs[4]*p.x*p.x;
+    next.z += z_coeffs[5]*p.y*p.y;
+    next.z += z_coeffs[6]*p.z*p.z;
 
-    next.z += z_coeffs[7]*xy;
-    next.z += z_coeffs[8]*xz;
-    next.z += z_coeffs[9]*yz;
+    next.z += z_coeffs[7]*p.x*p.y;
+    next.z += z_coeffs[8]*p.x*p.z;
+    next.z += z_coeffs[9]*p.y*p.z;
 
     // next.x = quad_iterate(p, x_coeffs);
     // next.y = quad_iterate(p, y_coeffs);
