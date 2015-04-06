@@ -1,0 +1,26 @@
+* Intro
+  kreativ kode
+
+  Hardware kravene er måske ikke små, men nemme.
+
+  Der er ikke noget der skal bestilles hjem fra kina eller loddes
+
+  "blinkenlights"
+
+* Live coding
+
+  Hvordan man tegner en spiral - på vejen mod en snegl
+
+** Hvad er processing.org
+
+   (primært)Java basseret platform til at lave sjov kode.
+
+   
+** Lets GO
+   [[file:~/Projects/sketchbook/TTT/TTT.pde::}][Template]]
+   
+* Hvad der siden hændte
+
+  Det er hobby og sjov og der er ingen der siger at der skal være
+  færdigt.
+
