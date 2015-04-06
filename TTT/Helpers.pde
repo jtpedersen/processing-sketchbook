@@ -20,7 +20,7 @@ void drawVector(ArrayList<PVector> pts, ArrayList<PVector> vs) {
 }
 
 void drawCircle(PVector O,PVector e1, PVector e2, float r) {
-  int cs = 5; //pp.var("cs: steps in circle [default:10] [step:10, 1] [range:3,10000]").asInt();
+  int cs = 15; //pp.var("cs: steps in circle [default:10] [step:10, 1] [range:3,10000]").asInt();
   float dTheta = TAU / (cs);
   beginShape();
   for (int i = 0; i <= cs; i++) {
