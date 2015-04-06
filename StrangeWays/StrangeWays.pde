@@ -12,7 +12,7 @@ void setup() {
 void draw() {
   setTheScene();
 
-  beginShape(POINTS);
+  beginShape();
   for(int i = 0; i < 50000; i++) {
     vertex(100.0 * pos.x, 100.0 * pos.y, 100.0 * pos.z);
     // print(pos);

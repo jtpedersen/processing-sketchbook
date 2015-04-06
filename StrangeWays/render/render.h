@@ -15,8 +15,8 @@
 #include <glm/gtx/color_space.hpp>
 #include <glm/ext.hpp> // << friends
 
-#define W 1024
-#define H 1024
+#define W 888
+#define H 888
 
 using Canvas = std::vector<unsigned int>;
 using Image  = std::vector<glm::vec3>;

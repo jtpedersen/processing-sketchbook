@@ -45,12 +45,14 @@ void streamin(float* dst, int cnt, std::ifstream& ifs) {
 }
 
 void setupCamera() {
-    cam = glm::lookAt(arr2vec(cam_pos),
-		      glm::vec3(0.0),
-		      glm::vec3(0,1,0));
+    cam = glm::mat4(1.0);
     cam = cam * glm::rotate(cam_rotations[0], glm::vec3(1.0f, 0.0f, 0.0f));
     cam = cam * glm::rotate(cam_rotations[1], glm::vec3(0.0f, 1.0f, 0.0f));
     cam = cam * glm::rotate(cam_rotations[2], glm::vec3(0.0f, 0.0f, 1.0f));
+
+    cam =  glm::lookAt(arr2vec(cam_pos),
+		       glm::vec3(0.0),
+		       glm::vec3(0,1,0));
 }
 
 glm::vec3 arr2vec(float * a) {
@@ -180,9 +182,7 @@ void measureBounds() {
     cout << "Scale: " << scale << endl;
     cam = glm::scale(cam, glm::vec3(.96 * scale));
     cout << "CAM: " << glm::to_string(cam) << endl;
-
 }
-
 
 void registerPosistionToCanvas(Canvas& canvas, const glm::vec3& p) {
     glm::vec4 projected = cam * glm::vec4(p, 1.0);

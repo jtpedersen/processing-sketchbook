@@ -1,7 +1,7 @@
 CXXFLAGS=-I /opt/local/include
 CXXFLAGS+=-pthread
 CXXFLAGS+=-g
-CXXFLAGS+=-DNDEBUG
+#CXXFLAGS+=-DNDEBUG
 CXXFLAGS+=-march=native
 CXXFLAGS+=-ffast-math
 

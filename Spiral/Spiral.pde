@@ -42,8 +42,6 @@ void draw() {
   //   drawCircle(p, up, right, cr);
   //   cr *= lcr;
   // }
-
-
   
   pp.renderHUD(); 
 }
